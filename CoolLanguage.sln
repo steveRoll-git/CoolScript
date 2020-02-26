@@ -1,0 +1,25 @@
+﻿
+Microsoft Visual Studio Solution File, Format Version 12.00
+# Visual Studio 15
+VisualStudioVersion = 15.0.28307.852
+MinimumVisualStudioVersion = 10.0.40219.1
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "CoolLanguage", "CoolLanguage\CoolLanguage.csproj", "{B7B4ED48-0F00-46B9-8598-3A30352E1002}"
+EndProject
+Global
+	GlobalSection(SolutionConfigurationPlatforms) = preSolution
+		Debug|Any CPU = Debug|Any CPU
+		Release|Any CPU = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+		{B7B4ED48-0F00-46B9-8598-3A30352E1002}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{B7B4ED48-0F00-46B9-8598-3A30352E1002}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{B7B4ED48-0F00-46B9-8598-3A30352E1002}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{B7B4ED48-0F00-46B9-8598-3A30352E1002}.Release|Any CPU.Build.0 = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(SolutionProperties) = preSolution
+		HideSolutionNode = FALSE
+	EndGlobalSection
+	GlobalSection(ExtensibilityGlobals) = postSolution
+		SolutionGuid = {9D6D2850-110E-4268-8040-7E3BDC2AAB37}
+	EndGlobalSection
+EndGlobal

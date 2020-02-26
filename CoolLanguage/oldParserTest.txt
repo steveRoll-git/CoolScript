@@ -1,0 +1,80 @@
+﻿enum TreeType
+    {
+        None,
+        Color,
+        Thing,
+        File
+    }
+
+    class Tree
+    {
+        public TreeType type = TreeType.None;
+    }
+
+    class ColorTree : Tree
+    {
+        public string color;
+
+        public ColorTree(string c)
+        {
+            color = c;
+        }
+    }
+
+    class ThingTree : Tree
+    {
+        public ColorTree color;
+
+        public ThingTree(ColorTree c)
+        {
+            color = c;
+        }
+    }
+
+    class FileTree : Tree
+    {
+        public List<ThingTree> things;
+
+        public FileTree()
+        {
+            things = new List<ThingTree>();
+        }
+
+        public void addThing(ThingTree thing)
+        {
+            things.Add(thing);
+        }
+    }
+	//////////
+	private ColorTree parseColor()
+        {
+            Token t = expect(Token.Identifier);
+
+            if (t.value != "red" && t.value != "green" && t.value != "blue")
+            {
+                throw new SyntaxErrorException(curToken.line, "expected color, got " + t);
+            }
+
+            return new ColorTree(t.value);
+        }
+
+        private ThingTree parseThing()
+        {
+            expect(lParen);
+            ColorTree color = parseColor();
+            expect(rParen);
+
+            return new ThingTree(color);
+        }
+
+        public FileTree parseFile()
+        {
+            FileTree tree = new FileTree();
+
+            while (!lexer.reachedEnd)
+            {
+                tree.addThing(parseThing());
+            }
+
+            return tree;
+        }
