@@ -10,7 +10,8 @@ namespace CoolLanguage
         {
             {"var", true},
             {"true", true },
-            {"false", true }
+            {"false", true },
+            {"null", true },
         };
 
         private int currentPos = 0;

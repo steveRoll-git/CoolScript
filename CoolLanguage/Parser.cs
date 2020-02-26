@@ -12,6 +12,7 @@ namespace CoolLanguage
         PrimitiveNumber,
         PrimitiveString,
         PrimitiveBoolean,
+        PrimitiveNull,
 
         BinaryOperator,
         UnaryExpression,
@@ -103,6 +104,19 @@ namespace CoolLanguage
         public override VMInstruction[] GetInstructions()
         {
             return new VMInstruction[] { new VMInstruction(InstructionType.PushBool, value) };
+        }
+    }
+
+    class NullTree : Tree
+    {
+        public NullTree()
+        {
+            type = TreeType.PrimitiveNull;
+        }
+
+        public override VMInstruction[] GetInstructions()
+        {
+            return new VMInstruction[] { new VMInstruction(InstructionType.PushNull) };
         }
     }
 
@@ -443,6 +457,7 @@ namespace CoolLanguage
 
         static Token kTrue = new Token(TokenType.Keyword, "true");
         static Token kFalse = new Token(TokenType.Keyword, "false");
+        static Token kNull = new Token(TokenType.Keyword, "null");
 
         private List<Scope> scopes = new List<Scope>();
 
@@ -591,6 +606,9 @@ namespace CoolLanguage
                 theBool = accept(kFalse);
             if (theBool.valid)
                 return new BoolTree(bool.Parse(theBool.value));
+
+            if (accept(kNull).valid)
+                return new NullTree();
 
             Token curly = accept(lCurly);
             if (curly.valid)

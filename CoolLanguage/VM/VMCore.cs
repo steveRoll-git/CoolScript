@@ -11,6 +11,8 @@ namespace CoolLanguage.VM
         PushString,
         /// <summary> parameter: bool. pushes the boolean onto the stack </summary>
         PushBool,
+        /// <summary> pushes a null value onto the stack </summary>
+        PushNull,
         /// <summary>  </summary>
         Pop,
 
@@ -197,6 +199,10 @@ namespace CoolLanguage.VM
                 else if (instruction.type == InstructionType.PushBool)
                 {
                     valueStack.Push(new ScriptValue(dataType.Boolean, instruction.data));
+                }
+                else if (instruction.type == InstructionType.PushNull)
+                {
+                    valueStack.Push(new ScriptValue(dataType.Null));
                 }
                 else if (instruction.type == InstructionType.PushGlobal)
                 {
