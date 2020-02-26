@@ -313,7 +313,18 @@ namespace CoolLanguage.VM
                     ScriptValue value2 = valueStack.Pop();
                     ScriptValue value1 = valueStack.Pop();
 
-                    if (instruction.type >= InstructionType.Add && instruction.type <= InstructionType.Pow)
+                    if(instruction.type == InstructionType.Concat)
+                    {
+                        if (value1.type != dataType.String && value1.type != dataType.Number)
+                        {
+                            return new ExecutionStatus(false, "Attempt to concatenate a " + value1.TypeName + " value");
+                        }
+                        if (value2.type != dataType.String && value2.type != dataType.Number)
+                        {
+                            return new ExecutionStatus(false, "Attempt to concatenate a " + value2.TypeName + " value");
+                        }
+                    }
+                    else if (instruction.type >= InstructionType.Add && instruction.type <= InstructionType.Pow)
                     {
                         if (value1.type != dataType.Number)
                         {
