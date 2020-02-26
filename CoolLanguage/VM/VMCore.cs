@@ -145,12 +145,14 @@ namespace CoolLanguage.VM
         Dictionary<string, ScriptValue> globalVars = new Dictionary<string, ScriptValue>();
 
         Dictionary<int, Table> tableStorage = new Dictionary<int, Table>();
+        private int lastTableID = 0;
 
         Dictionary<int, Closure> functionStorage = new Dictionary<int, Closure>();
 
         Dictionary<int, Func<ScriptValue[], ScriptValue>> CFunctionStorage = new Dictionary<int, Func<ScriptValue[], ScriptValue>>();
 
         Dictionary<int, FunctionPrototype> functionPrototypes = new Dictionary<int, FunctionPrototype>();
+        private int lastPrototypeID = 0;
 
         static Dictionary<string, Func<ScriptValue[], ScriptValue>> defaultFunctions = new Dictionary<string, Func<ScriptValue[], ScriptValue>>
         {
@@ -305,8 +307,9 @@ namespace CoolLanguage.VM
                 else if (instruction.type == InstructionType.CreateTable)
                 {
                     Table table = new Table();
-                    tableStorage.Add(table.GetHashCode(), table);
-                    valueStack.Push(new ScriptValue(dataType.Table, table.GetHashCode()));
+                    int id = lastTableID++;
+                    tableStorage.Add(id, table);
+                    valueStack.Push(new ScriptValue(dataType.Table, id));
                 }
                 else if (instruction.type >= InstructionType.Add && instruction.type <= InstructionType.Or)
                 {
@@ -363,12 +366,13 @@ namespace CoolLanguage.VM
 
         public ExecutionStatus ExecuteChunk(Chunk chunk)
         {
+            int firstId = lastPrototypeID;
             foreach (FunctionPrototype prototype in chunk.prototypes)
             {
-                functionPrototypes.Add(prototype.GetHashCode(), prototype);
+                functionPrototypes.Add(lastPrototypeID++, prototype);
             }
 
-            return Run(functionPrototypes[chunk.prototypes[0].GetHashCode()].instructions);
+            return Run(functionPrototypes[firstId].instructions);
         }
 
         public ScriptValue getStackLast()
