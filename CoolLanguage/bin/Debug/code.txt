@@ -1,3 +1,5 @@
-thing = 2
-new = thing + 1
-print("the thing is " .. new)
+var wowthing = 99
+
+var newthing = wowthing + 1
+
+print(newthing)

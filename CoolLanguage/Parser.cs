@@ -423,6 +423,7 @@ namespace CoolLanguage
         public Dictionary<string, int> localVariables = new Dictionary<string, int>();
 
         public int localCount = 0;
+        public int maxLocalCount = 0;
 
         public int functionId;
 
@@ -672,7 +673,10 @@ namespace CoolLanguage
 
                     last.localVariables.Add(varName, last.localCount);
 
-                    return new LocalAssignmentTree(last.localCount++, expression);
+                    last.localCount++;
+                    last.maxLocalCount = Math.Max(last.localCount, last.maxLocalCount);
+
+                    return new LocalAssignmentTree(last.localCount, expression);
                 }
             }
             else if (curToken.type == TokenType.Identifier || curToken.compare(lParen))
@@ -730,6 +734,7 @@ namespace CoolLanguage
             else
             {
                 newScope.localCount = last.localCount;
+                newScope.maxLocalCount = last.maxLocalCount;
                 newScope.functionId = last.functionId;
             }
             scopes.Add(newScope);
@@ -759,10 +764,10 @@ namespace CoolLanguage
             }
             else
             {
-                last.localCount = Math.Max(last.localCount, newScope.localCount);
+                last.maxLocalCount = Math.Max(last.maxLocalCount, newScope.maxLocalCount);
             }
 
-            block.localCount = last.localCount;
+            block.localCount = last.maxLocalCount;
 
             return block;
         }
