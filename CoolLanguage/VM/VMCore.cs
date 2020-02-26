@@ -178,11 +178,13 @@ namespace CoolLanguage.VM
             }
         }
 
-        public ExecutionStatus Run(VMInstruction[] instructions)
+        public ExecutionStatus Run(Closure closure)
         {
-            for (int i = 0; i < instructions.Length; i++)
+            int instructionPointer = 0;
+            while(instructionPointer < closure.instructions.Length)
             {
-                VMInstruction instruction = instructions[i];
+                bool incrementIP = true;
+                VMInstruction instruction = closure.instructions[instructionPointer];
 
                 if (instruction.type == InstructionType.PushNumber)
                 {
@@ -359,6 +361,11 @@ namespace CoolLanguage.VM
 
                     valueStack.Push(new ScriptValue(dataType.Number, -value.value));
                 }
+
+                if (incrementIP)
+                {
+                    instructionPointer++;
+                }
             }
 
             return new ExecutionStatus(true);
@@ -372,7 +379,7 @@ namespace CoolLanguage.VM
                 functionPrototypes.Add(lastPrototypeID++, prototype);
             }
 
-            return Run(functionPrototypes[firstId].instructions);
+            return Run(new Closure(functionPrototypes[firstId]));
         }
 
         public ScriptValue getStackLast()
