@@ -420,9 +420,6 @@ namespace CoolLanguage
 
     class IfTree : Tree
     {
-        /// <summary>
-        /// a collection of all the (else) if statements, including the first one
-        /// </summary>
         public Tree condition;
         public Tree ifBody;
 
@@ -436,8 +433,6 @@ namespace CoolLanguage
 
         public override VMInstruction[] GetInstructions()
         {
-            //TODO: make each ifgroup jump to the end of the entire if chain (how???)
-
             List<VMInstruction> toReturn = new List<VMInstruction>();
 
             toReturn.AddRange(condition.GetInstructions());
@@ -464,7 +459,8 @@ namespace CoolLanguage
     {
         None,
         Chunk,
-        If
+        If,
+        While
     }
 
     class Scope
