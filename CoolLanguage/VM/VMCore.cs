@@ -126,6 +126,27 @@ namespace CoolLanguage.VM
         }
     }
 
+    struct CFuncStatus
+    {
+        public bool success;
+        public string errorMessage;
+        public ScriptValue returnValue;
+
+        public CFuncStatus(string errorMessage)
+        {
+            this.errorMessage = errorMessage;
+            success = false;
+            returnValue = ScriptValue.Null;
+        }
+
+        public CFuncStatus(ScriptValue returnValue)
+        {
+            this.returnValue = returnValue;
+            success = true;
+            errorMessage = "";
+        }
+    }
+
     class CoolScriptVM
     {
         static Func<ScriptValue, ScriptValue, ScriptValue>[] binaryOperators = {
@@ -155,24 +176,28 @@ namespace CoolLanguage.VM
 
         Dictionary<int, Closure> functionStorage = new Dictionary<int, Closure>();
 
-        Dictionary<int, Func<ScriptValue[], ScriptValue>> CFunctionStorage = new Dictionary<int, Func<ScriptValue[], ScriptValue>>();
+        Dictionary<int, Func<ScriptValue[], CFuncStatus>> CFunctionStorage = new Dictionary<int, Func<ScriptValue[], CFuncStatus>>();
 
         Dictionary<int, FunctionPrototype> functionPrototypes = new Dictionary<int, FunctionPrototype>();
         private int lastPrototypeID = 0;
 
-        static Dictionary<string, Func<ScriptValue[], ScriptValue>> defaultFunctions = new Dictionary<string, Func<ScriptValue[], ScriptValue>>
+        static Dictionary<string, Func<ScriptValue[], CFuncStatus>> defaultFunctions = new Dictionary<string, Func<ScriptValue[], CFuncStatus>>
         {
-            {"type", (ScriptValue[] args) => new ScriptValue(dataType.String, args[0].TypeName) },
+            {"type", (ScriptValue[] args) => {
+                if (args.Length <= 0)
+                    return new CFuncStatus("type expected value");
+                return new CFuncStatus(new ScriptValue(dataType.String, args[0].TypeName));
+            } },
             {"print", (ScriptValue[] args) => {
                 Console.WriteLine(string.Join("\t", args));
-                return ScriptValue.Null;
+                return new CFuncStatus(ScriptValue.Null);
             } },
             {"input", (ScriptValue[] args) =>
             {
                 if (args.Length > 0)
                     Console.Write(args[0].value);
 
-                return new ScriptValue(dataType.String, Console.ReadLine());
+                return new CFuncStatus(new ScriptValue(dataType.String, Console.ReadLine()));
             } }
         };
 
@@ -311,7 +336,7 @@ namespace CoolLanguage.VM
                     }
                     else if (function.type == dataType.CFunction)
                     {
-                        Func<ScriptValue[], ScriptValue> cFunc;
+                        Func<ScriptValue[], CFuncStatus> cFunc;
                         if (!CFunctionStorage.TryGetValue(function.value, out cFunc))
                         {
                             //normally this shouldn't happen
@@ -327,7 +352,14 @@ namespace CoolLanguage.VM
                             arguments[a] = valueStack.Pop();
                         }
 
-                        valueStack.Push(cFunc(arguments));
+                        CFuncStatus status = cFunc(arguments);
+
+                        if (!status.success)
+                        {
+                            return new ExecutionStatus(false, status.errorMessage);
+                        }
+
+                        valueStack.Push(status.returnValue);
                     }
                     else
                     {
@@ -429,7 +461,7 @@ namespace CoolLanguage.VM
             return valueStack.Peek();
         }
 
-        public void AddCFunction(Func<ScriptValue[], ScriptValue> function, string globalName)
+        public void AddCFunction(Func<ScriptValue[], CFuncStatus> function, string globalName)
         {
             int id = lastCFunctionID++;
             CFunctionStorage.Add(id, function);
