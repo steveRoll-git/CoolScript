@@ -418,6 +418,48 @@ namespace CoolLanguage
         }
     }
 
+    class IfTree : Tree
+    {
+        /// <summary>
+        /// a collection of all the (else) if statements, including the first one
+        /// </summary>
+        public Tree condition;
+        public Tree ifBody;
+
+        public bool hasElse;
+        public Tree elseBody;
+
+        public IfTree()
+        {
+
+        }
+
+        public override VMInstruction[] GetInstructions()
+        {
+            //TODO: make each ifgroup jump to the end of the entire if chain (how???)
+
+            List<VMInstruction> toReturn = new List<VMInstruction>();
+
+            toReturn.AddRange(condition.GetInstructions());
+
+            VMInstruction[] bodyInstructions = ifBody.GetInstructions();
+
+            toReturn.Add(new VMInstruction(InstructionType.JumpFalse, bodyInstructions.Length + (hasElse ? 2 : 1)));
+            toReturn.AddRange(bodyInstructions);
+
+            if (hasElse)
+            {
+                VMInstruction[] elseInstructions = elseBody.GetInstructions();
+
+                toReturn.Add(new VMInstruction(InstructionType.Jump, elseInstructions.Length + 1));
+
+                toReturn.AddRange(elseInstructions);
+            }
+
+            return toReturn.ToArray();
+        }
+    }
+
     class Scope
     {
         public Dictionary<string, int> localVariables = new Dictionary<string, int>();
@@ -459,6 +501,8 @@ namespace CoolLanguage
         static Token kTrue = new Token(TokenType.Keyword, "true");
         static Token kFalse = new Token(TokenType.Keyword, "false");
         static Token kNull = new Token(TokenType.Keyword, "null");
+
+        static Token kElse = new Token(TokenType.Keyword, "else");
 
         private List<Scope> scopes = new List<Scope>();
 
@@ -678,6 +722,26 @@ namespace CoolLanguage
 
                     return new LocalAssignmentTree(last.localCount - 1, expression);
                 }
+                else if (keyword.value == "if")
+                {
+                    IfTree tree = new IfTree();
+
+                    expect(lParen);
+
+                    tree.condition = ParseExpression();
+
+                    expect(rParen);
+
+                    tree.ifBody = ParseBlockOrStatement();
+
+                    if (accept(kElse).valid)
+                    {
+                        tree.hasElse = true;
+                        tree.elseBody = ParseBlockOrStatement();
+                    }
+
+                    return tree;
+                }
             }
             else if (curToken.type == TokenType.Identifier || curToken.compare(lParen))
             {
@@ -770,6 +834,18 @@ namespace CoolLanguage
             block.localCount = last.maxLocalCount;
 
             return block;
+        }
+
+        public Tree ParseBlockOrStatement()
+        {
+            if (accept(lCurly).valid)
+            {
+                return ParseBlock(rCurly);
+            }
+            else
+            {
+                return ParseStatement();
+            }
         }
 
         public Chunk ParseChunk()

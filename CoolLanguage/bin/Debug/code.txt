@@ -1,7 +1,13 @@
-var wowthing = 99
+var newthing = 4 + 1
 
-var newthing = wowthing + 1
+var str = "oh wow"
 
-var heck = "oh wow"
+if(newthing <= 3){
+	print("yeah")
+}else if(str == "h"){
+	print("ok")
+}else{
+	print("nope")
+}
 
 print(newthing)

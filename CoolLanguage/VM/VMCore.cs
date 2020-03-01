@@ -39,6 +39,10 @@ namespace CoolLanguage.VM
 
         /// <summary> parameter: int amount. moves the instruction pointer by that much. (can be negative) </summary>
         Jump,
+        /// <summary> paramter: int amount. pops the value at the top of the stack, and jumps by the specified amount if it's true </summary>
+        JumpTrue,
+        /// <summary> paramter: int amount. pops the value at the top of the stack, and jumps by the specified amount if it's false </summary>
+        JumpFalse,
 
         /// <summary> parameter: int args. calls the last item on the stack, and uses specified number of previous items as arguments (in the order they were added) </summary>
         Call,
@@ -366,6 +370,20 @@ namespace CoolLanguage.VM
                     }
 
                     valueStack.Push(binaryOperators[instruction.type - InstructionType.Add](value1, value2));
+                }
+                else if (instruction.type == InstructionType.Jump || instruction.type == InstructionType.JumpTrue || instruction.type == InstructionType.JumpFalse)
+                {
+                    if (instruction.type == InstructionType.JumpTrue || instruction.type == InstructionType.JumpFalse)
+                    {
+                        ScriptValue value = valueStack.Pop();
+                        if (Util.isTruthyValue(value) ^ instruction.type == InstructionType.JumpTrue)
+                        {
+                            goto dont;
+                        }
+                    }
+                    instructionPointer += instruction.data;
+                    incrementIP = false;
+                dont:;
                 }
                 else if (instruction.type == InstructionType.Negate)
                 {
