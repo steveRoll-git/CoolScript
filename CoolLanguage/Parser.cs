@@ -460,6 +460,13 @@ namespace CoolLanguage
         }
     }
 
+    enum ScopeType
+    {
+        None,
+        Chunk,
+        If
+    }
+
     class Scope
     {
         public Dictionary<string, int> localVariables = new Dictionary<string, int>();
@@ -469,10 +476,13 @@ namespace CoolLanguage
 
         public int functionId;
 
+        public ScopeType type;
+
         //public FunctionPrototype prototype;
 
-        public Scope(int _localCount = 0)
+        public Scope(ScopeType type, int _localCount = 0)
         {
+            this.type = type;
             localCount = _localCount;
         }
     }
@@ -732,12 +742,12 @@ namespace CoolLanguage
 
                     expect(rParen);
 
-                    tree.ifBody = ParseBlockOrStatement();
+                    tree.ifBody = ParseBlockOrStatement(ScopeType.If);
 
                     if (accept(kElse).valid)
                     {
                         tree.hasElse = true;
-                        tree.elseBody = ParseBlockOrStatement();
+                        tree.elseBody = ParseBlockOrStatement(ScopeType.If);
                     }
 
                     return tree;
@@ -786,16 +796,19 @@ namespace CoolLanguage
             throw new SyntaxErrorException(curToken.line, "Did not expect " + curToken + " here");
         }
 
-        private BlockTree ParseBlock(Token endsWith, bool isFunction = false)
+        private BlockTree ParseBlock(ScopeType type, Token endsWith, bool isFunction = false)
         {
-            Scope last = scopes[scopes.Count - 1];
+            Scope last = null;
+            bool hasLast = scopes.Count > 0;
+            if (hasLast)
+                last = scopes[scopes.Count - 1];
 
-            Scope newScope = new Scope();
+            Scope newScope = new Scope(type);
             if (isFunction)
             {
                 newScope.functionId = functionIdCount++;
             }
-            else
+            else if (hasLast)
             {
                 newScope.localCount = last.localCount;
                 newScope.maxLocalCount = last.maxLocalCount;
@@ -826,21 +839,24 @@ namespace CoolLanguage
             {
                 functionIdCount--;
             }
-            else
+            else if(hasLast)
             {
                 last.maxLocalCount = Math.Max(last.maxLocalCount, newScope.maxLocalCount);
             }
 
-            block.localCount = last.maxLocalCount;
+            if (scopes.Count > 0)
+                block.localCount = last.maxLocalCount;
+            else
+                block.localCount = newScope.maxLocalCount;
 
             return block;
         }
 
-        public Tree ParseBlockOrStatement()
+        public Tree ParseBlockOrStatement(ScopeType type)
         {
             if (accept(lCurly).valid)
             {
-                return ParseBlock(rCurly);
+                return ParseBlock(type, rCurly);
             }
             else
             {
@@ -850,9 +866,7 @@ namespace CoolLanguage
 
         public Chunk ParseChunk()
         {
-            scopes.Add(new Scope());
-
-            BlockTree block = ParseBlock(Token.EOF);
+            BlockTree block = ParseBlock(ScopeType.Chunk, Token.EOF);
 
             prototypes.Add(new FunctionPrototype(block.GetInstructions(), block.localCount));
 
