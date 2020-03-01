@@ -183,10 +183,13 @@ namespace CoolLanguage.VM
         public ExecutionStatus Run(Closure closure)
         {
             int instructionPointer = 0;
-            while(instructionPointer < closure.instructions.Length)
+
+            ScriptValue[] stackFrame = new ScriptValue[closure.prototype.stackSize];
+
+            while(instructionPointer < closure.prototype.instructions.Length)
             {
                 bool incrementIP = true;
-                VMInstruction instruction = closure.instructions[instructionPointer];
+                VMInstruction instruction = closure.prototype.instructions[instructionPointer];
 
                 if (instruction.type == InstructionType.PushNumber)
                 {
@@ -223,11 +226,11 @@ namespace CoolLanguage.VM
                 }
                 else if (instruction.type == InstructionType.GetLocal)
                 {
-                    valueStack.Push(closure.stackFrame[instruction.data]);
+                    valueStack.Push(stackFrame[instruction.data]);
                 }
                 else if (instruction.type == InstructionType.SetLocal)
                 {
-                    closure.stackFrame[instruction.data] = valueStack.Pop();
+                    stackFrame[instruction.data] = valueStack.Pop();
                 }
                 else if (instruction.type == InstructionType.GetTable)
                 {

@@ -88,15 +88,11 @@ namespace CoolLanguage.VM
 
     class Closure
     {
-        public ScriptValue[] stackFrame;
-
-        public VMInstruction[] instructions;
+        public FunctionPrototype prototype;
 
         public Closure(FunctionPrototype prototype)
         {
-            stackFrame = new ScriptValue[prototype.stackSize];
-
-            instructions = prototype.instructions;
+            this.prototype = prototype;
         }
     }
 }
