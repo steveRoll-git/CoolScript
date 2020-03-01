@@ -1,7 +1,10 @@
-var theName = input("what is your name? ")
+var theInput = ""
 
-if(theName == ""){
-	print("you didn't input a name")
-}else{
-	print("hello, " .. theName .. "!")
+var final = ""
+
+while(theInput != "stop"){
+	theInput = input("type something: ")
+	final = final .. theInput
 }
+
+print(final)

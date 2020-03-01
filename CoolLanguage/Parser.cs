@@ -455,6 +455,32 @@ namespace CoolLanguage
         }
     }
 
+    class WhileTree : Tree
+    {
+        public Tree condition;
+        public Tree body;
+
+        public WhileTree()
+        {
+
+        }
+
+        public override VMInstruction[] GetInstructions()
+        {
+            List<VMInstruction> toReturn = new List<VMInstruction>();
+
+            VMInstruction[] conditionInstructions = condition.GetInstructions();
+            VMInstruction[] bodyInstructions = body.GetInstructions();
+
+            toReturn.AddRange(conditionInstructions);
+            toReturn.Add(new VMInstruction(InstructionType.JumpFalse, bodyInstructions.Length + 2));
+            toReturn.AddRange(bodyInstructions);
+            toReturn.Add(new VMInstruction(InstructionType.Jump, -bodyInstructions.Length - conditionInstructions.Length - 1));
+
+            return toReturn.ToArray();
+        }
+    }
+
     enum ScopeType
     {
         None,
@@ -745,6 +771,20 @@ namespace CoolLanguage
                         tree.hasElse = true;
                         tree.elseBody = ParseBlockOrStatement(ScopeType.If);
                     }
+
+                    return tree;
+                }
+                else if (keyword.value == "while")
+                {
+                    WhileTree tree = new WhileTree();
+
+                    expect(lParen);
+
+                    tree.condition = ParseExpression();
+
+                    expect(rParen);
+
+                    tree.body = ParseBlockOrStatement(ScopeType.While);
 
                     return tree;
                 }
