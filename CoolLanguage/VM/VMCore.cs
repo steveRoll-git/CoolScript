@@ -162,11 +162,18 @@ namespace CoolLanguage.VM
 
         static Dictionary<string, Func<ScriptValue[], ScriptValue>> defaultFunctions = new Dictionary<string, Func<ScriptValue[], ScriptValue>>
         {
+            {"type", (ScriptValue[] args) => new ScriptValue(dataType.String, args[0].TypeName) },
             {"print", (ScriptValue[] args) => {
                 Console.WriteLine(string.Join("\t", args));
                 return ScriptValue.Null;
             } },
-            {"type", (ScriptValue[] args) => new ScriptValue(dataType.String, args[0].TypeName) }
+            {"input", (ScriptValue[] args) =>
+            {
+                if (args.Length > 0)
+                    Console.Write(args[0].value);
+
+                return new ScriptValue(dataType.String, Console.ReadLine());
+            } }
         };
 
         private int lastCFunctionID = 0;

@@ -1,13 +1,7 @@
-var newthing = 4 + 1
+var theName = input("what is your name? ")
 
-var str = "oh wow"
-
-if(newthing <= 3){
-	print("yeah")
-}else if(str == "h"){
-	print("ok")
+if(theName == ""){
+	print("you didn't input a name")
 }else{
-	print("nope")
+	print("hello, " .. theName .. "!")
 }
-
-print(newthing)
