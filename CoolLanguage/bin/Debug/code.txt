@@ -2,4 +2,6 @@ var wowthing = 99
 
 var newthing = wowthing + 1
 
+var heck = "oh wow"
+
 print(newthing)

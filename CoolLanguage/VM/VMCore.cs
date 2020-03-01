@@ -221,6 +221,14 @@ namespace CoolLanguage.VM
 
                     globalVars[instruction.data] = theValue;
                 }
+                else if (instruction.type == InstructionType.GetLocal)
+                {
+                    valueStack.Push(closure.stackFrame[instruction.data]);
+                }
+                else if (instruction.type == InstructionType.SetLocal)
+                {
+                    closure.stackFrame[instruction.data] = valueStack.Pop();
+                }
                 else if (instruction.type == InstructionType.GetTable)
                 {
                     ScriptValue index = valueStack.Pop();

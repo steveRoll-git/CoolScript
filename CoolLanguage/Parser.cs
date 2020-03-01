@@ -676,7 +676,7 @@ namespace CoolLanguage
                     last.localCount++;
                     last.maxLocalCount = Math.Max(last.localCount, last.maxLocalCount);
 
-                    return new LocalAssignmentTree(last.localCount, expression);
+                    return new LocalAssignmentTree(last.localCount - 1, expression);
                 }
             }
             else if (curToken.type == TokenType.Identifier || curToken.compare(lParen))
