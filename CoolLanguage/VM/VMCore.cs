@@ -223,6 +223,13 @@ namespace CoolLanguage.VM
 	            }
                 return new CFuncStatus(ScriptValue.Null);
             } },
+            {"tostring", (ScriptValue[] args) =>
+            {
+                if (args.Length <= 0)
+                    return argError("tostring", 1, "value");
+
+                return new CFuncStatus(new ScriptValue(dataType.String, args[0].ToString()));
+            } },
         };
 
         private int lastCFunctionID = 0;
