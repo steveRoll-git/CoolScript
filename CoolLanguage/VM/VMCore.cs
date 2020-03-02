@@ -147,6 +147,20 @@ namespace CoolLanguage.VM
         }
     }
 
+    class ClosureInstance
+    {
+        public Closure closure;
+        public int instructionPointer = 0;
+        public ScriptValue[] stackFrame;
+
+        public ClosureInstance(Closure closure)
+        {
+            this.closure = closure;
+
+            stackFrame = new ScriptValue[closure.prototype.stackSize];
+        }
+    }
+
     class CoolScriptVM
     {
         static Func<ScriptValue, ScriptValue, ScriptValue>[] binaryOperators = {
@@ -249,14 +263,12 @@ namespace CoolLanguage.VM
 
         public ExecutionStatus Run(Closure closure)
         {
-            int instructionPointer = 0;
+            ClosureInstance instance = new ClosureInstance(closure);
 
-            ScriptValue[] stackFrame = new ScriptValue[closure.prototype.stackSize];
-
-            while(instructionPointer < closure.prototype.instructions.Length)
+            while(instance.instructionPointer < closure.prototype.instructions.Length)
             {
                 bool incrementIP = true;
-                VMInstruction instruction = closure.prototype.instructions[instructionPointer];
+                VMInstruction instruction = closure.prototype.instructions[instance.instructionPointer];
 
                 if (instruction.type == InstructionType.PushNumber)
                 {
@@ -293,11 +305,11 @@ namespace CoolLanguage.VM
                 }
                 else if (instruction.type == InstructionType.GetLocal)
                 {
-                    valueStack.Push(stackFrame[instruction.data]);
+                    valueStack.Push(instance.stackFrame[instruction.data]);
                 }
                 else if (instruction.type == InstructionType.SetLocal)
                 {
-                    stackFrame[instruction.data] = valueStack.Pop();
+                    instance.stackFrame[instruction.data] = valueStack.Pop();
                 }
                 else if (instruction.type == InstructionType.GetTable)
                 {
@@ -451,7 +463,7 @@ namespace CoolLanguage.VM
                             goto dont;
                         }
                     }
-                    instructionPointer += instruction.data;
+                    instance.instructionPointer += instruction.data;
                     incrementIP = false;
                 dont:;
                 }
@@ -469,7 +481,7 @@ namespace CoolLanguage.VM
 
                 if (incrementIP)
                 {
-                    instructionPointer++;
+                    instance.instructionPointer++;
                 }
             }
 
