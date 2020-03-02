@@ -181,11 +181,16 @@ namespace CoolLanguage.VM
         Dictionary<int, FunctionPrototype> functionPrototypes = new Dictionary<int, FunctionPrototype>();
         private int lastPrototypeID = 0;
 
+        static CFuncStatus argError(string funcName, int argNumber, string expected, string got = "")
+        {
+            return new CFuncStatus(funcName + " arg #" + argNumber + ": expected " + expected + (got != "" ? (", got " + got) : ""));
+        }
+
         static Dictionary<string, Func<ScriptValue[], CFuncStatus>> defaultFunctions = new Dictionary<string, Func<ScriptValue[], CFuncStatus>>
         {
             {"type", (ScriptValue[] args) => {
                 if (args.Length <= 0)
-                    return new CFuncStatus("type expected value");
+                    return argError("type", 1, "value");
                 return new CFuncStatus(new ScriptValue(dataType.String, args[0].TypeName));
             } },
             {"print", (ScriptValue[] args) => {
