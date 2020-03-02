@@ -203,7 +203,26 @@ namespace CoolLanguage.VM
                     Console.Write(args[0].value);
 
                 return new CFuncStatus(new ScriptValue(dataType.String, Console.ReadLine()));
-            } }
+            } },
+            {"tonumber", (ScriptValue[] args) =>
+            {
+                if (args.Length <= 0)
+                    return argError("tonumber", 1, "value");
+
+                if (args[0].type == dataType.Number)
+                {
+                     return new CFuncStatus(args[0]);
+                }
+                else if (args[0].type == dataType.String)
+                {
+                    double result;
+                    if(double.TryParse(args[0].value, out result))
+                    {
+                        return new CFuncStatus(new ScriptValue(dataType.Number, result));
+                    }
+	            }
+                return new CFuncStatus(ScriptValue.Null);
+            } },
         };
 
         private int lastCFunctionID = 0;
