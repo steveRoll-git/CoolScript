@@ -9,6 +9,7 @@ namespace CoolLanguage.VM
         Number,
         String,
         Table,
+        Array,
         Function,
         CFunction
     }
@@ -22,6 +23,7 @@ namespace CoolLanguage.VM
             "number",
             "string",
             "table",
+            "array",
             "function",
             "cfunction"
         };
@@ -41,6 +43,10 @@ namespace CoolLanguage.VM
             if (type == dataType.Table)
             {
                 return "table: " + value;
+            }
+            else if (type == dataType.Array)
+            {
+                return "array: " + value;
             }
             else if (type == dataType.Function)
             {
@@ -69,7 +75,12 @@ namespace CoolLanguage.VM
 
     class Table
     {
-        public Dictionary<ScriptValue, ScriptValue> dictionary = new Dictionary<ScriptValue, ScriptValue>();
+        public Dictionary<string, ScriptValue> dictionary = new Dictionary<string, ScriptValue>();
+    }
+
+    class ScriptArray
+    {
+        public List<ScriptValue> list = new List<ScriptValue>();
     }
 
     class FunctionPrototype

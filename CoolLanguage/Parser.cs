@@ -31,6 +31,7 @@ namespace CoolLanguage
         Block,
 
         CreateTable,
+        CreateArray,
     }
 
     enum Associativity
@@ -303,7 +304,7 @@ namespace CoolLanguage
             Array.Copy(objectInstructions, toReturn, objectInstructions.Length);
             Array.Copy(indexInstructions, 0, toReturn, objectInstructions.Length, indexInstructions.Length);
 
-            toReturn[toReturn.Length - 1] = new VMInstruction(InstructionType.GetTable);
+            toReturn[toReturn.Length - 1] = new VMInstruction(InstructionType.GetIndex);
 
             return toReturn;
         }
@@ -336,7 +337,7 @@ namespace CoolLanguage
             Array.Copy(indexInstructions, 0, toReturn, objectInstructions.Length, indexInstructions.Length);
             Array.Copy(valueInstructions, 0, toReturn, objectInstructions.Length + indexInstructions.Length, valueInstructions.Length);
 
-            toReturn[toReturn.Length - 1] = new VMInstruction(InstructionType.SetTable);
+            toReturn[toReturn.Length - 1] = new VMInstruction(InstructionType.SetIndex);
 
             return toReturn;
         }
@@ -387,6 +388,35 @@ namespace CoolLanguage
         public override VMInstruction[] GetInstructions()
         {
             return new VMInstruction[] { new VMInstruction(InstructionType.CreateTable) };
+        }
+    }
+
+    class CreateArrayTree : Tree
+    {
+        private List<Tree> items = new List<Tree>();
+
+        public CreateArrayTree()
+        {
+            type = TreeType.CreateArray;
+        }
+
+        public void AddItem(Tree item)
+        {
+            items.Add(item);
+        }
+
+        public override VMInstruction[] GetInstructions()
+        {
+            List<VMInstruction> toReturn = new List<VMInstruction>();
+
+            foreach (Tree item in items)
+            {
+                toReturn.AddRange(item.GetInstructions());
+            }
+
+            toReturn.Add(new VMInstruction(InstructionType.CreateArray, items.Count));
+
+            return toReturn.ToArray();
         }
     }
 
@@ -693,6 +723,21 @@ namespace CoolLanguage
                 //TODO table definition here
                 expect(rCurly);
                 return new CreateTableTree();
+            }
+
+            Token square = accept(lSquare);
+            if (square.valid)
+            {
+                CreateArrayTree tree = new CreateArrayTree();
+                if (!accept(rSquare).valid)
+                {
+                    do
+                    {
+                        tree.AddItem(ParseExpression());
+                    } while (accept(comma).valid);
+                    expect(rSquare);
+                }
+                return tree;
             }
 
             /*expect(lParen);
