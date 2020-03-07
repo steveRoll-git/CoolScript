@@ -115,7 +115,7 @@ namespace CoolLanguage.VM
     struct Chunk
     {
         /// <summary>
-        /// the first prototype is what the chunk will execute
+        /// the last prototype is what the chunk will execute
         /// </summary>
         public FunctionPrototype[] prototypes;
     }
@@ -199,11 +199,16 @@ namespace CoolLanguage.VM
         private int lastArrayID = 0;
 
         Dictionary<int, Closure> functionStorage = new Dictionary<int, Closure>();
+        private int lastFunctionID = 0;
 
         Dictionary<int, Func<ScriptValue[], CFuncStatus>> CFunctionStorage = new Dictionary<int, Func<ScriptValue[], CFuncStatus>>();
 
         Dictionary<int, FunctionPrototype> functionPrototypes = new Dictionary<int, FunctionPrototype>();
-        private int lastPrototypeID = 0;
+        public int lastPrototypeID
+        {
+            get;
+            private set;
+        } = 0;
 
         static CFuncStatus argError(string funcName, int argNumber, string expected, string got = "")
         {
@@ -271,9 +276,14 @@ namespace CoolLanguage.VM
             }
         }
 
-        public ExecutionStatus Run(Closure closure)
+        public ExecutionStatus Run(Closure closure, ScriptValue[] arguments)
         {
             ClosureInstance instance = new ClosureInstance(closure);
+
+            for (int i = 0; i < arguments.Length; i++)
+            {
+                instance.stackFrame[i] = arguments[i];
+            }
 
             while(instance.instructionPointer < closure.prototype.instructions.Length)
             {
@@ -462,7 +472,31 @@ namespace CoolLanguage.VM
 
                     if (function.type == dataType.Function)
                     {
+                        if (functionStorage.TryGetValue(function.value, out Closure theClosure))
+                        {
+                            int argCount = instruction.data;
 
+                            ScriptValue[] args = new ScriptValue[theClosure.prototype.argCount];
+
+                            for (int a = argCount - 1; a >= 0; a--)
+                            {
+                                ScriptValue value = valueStack.Pop();
+                                if (a < theClosure.prototype.argCount)
+                                    args[a] = value;
+                            }
+
+                            //TODO return value here
+                            ExecutionStatus status = Run(theClosure, args);
+                            if (!status.success)
+                            {
+                                return status;
+                            }
+                        }
+                        else
+                        {
+                            //normally this shouldn't happen
+                            return new ExecutionStatus(false, "Function " + function.value + " doesn't exist");
+                        }
                     }
                     else if (function.type == dataType.CFunction)
                     {
@@ -475,14 +509,14 @@ namespace CoolLanguage.VM
 
                         int argCount = instruction.data;
 
-                        ScriptValue[] arguments = new ScriptValue[argCount];
+                        ScriptValue[] args = new ScriptValue[argCount];
 
                         for (int a = argCount - 1; a >= 0; a--)
                         {
-                            arguments[a] = valueStack.Pop();
+                            args[a] = valueStack.Pop();
                         }
 
-                        CFuncStatus status = cFunc(arguments);
+                        CFuncStatus status = cFunc(args);
 
                         if (!status.success)
                         {
@@ -515,6 +549,22 @@ namespace CoolLanguage.VM
                     }
 
                     valueStack.Push(new ScriptValue(dataType.Array, id));
+                }
+                else if (instruction.type == InstructionType.CreateClosure)
+                {
+                    if (functionPrototypes.TryGetValue(instruction.data, out FunctionPrototype prototype))
+                    {
+                        Closure newClosure = new Closure(prototype);
+                        int id = lastFunctionID++;
+                        functionStorage.Add(id, newClosure);
+
+                        valueStack.Push(new ScriptValue(dataType.Function, id));
+                    }
+                    else
+                    {
+                        //normally this shouldn't happen
+                        return new ExecutionStatus(false, "Function prototype " + instruction.data + " doesn't exist");
+                    }
                 }
                 else if (instruction.type >= InstructionType.Add && instruction.type <= InstructionType.Or)
                 {
@@ -590,13 +640,13 @@ namespace CoolLanguage.VM
 
         public ExecutionStatus ExecuteChunk(Chunk chunk)
         {
-            int firstId = lastPrototypeID;
+            //int firstId = lastPrototypeID;
             foreach (FunctionPrototype prototype in chunk.prototypes)
             {
                 functionPrototypes.Add(lastPrototypeID++, prototype);
             }
 
-            return Run(new Closure(functionPrototypes[firstId]));
+            return Run(new Closure(functionPrototypes[functionPrototypes.Count - 1]), new ScriptValue[0]);
         }
 
         public ScriptValue getStackLast()

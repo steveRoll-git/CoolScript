@@ -37,7 +37,7 @@ namespace CoolLanguage
                 try
                 {
                     Parser parser = new Parser(System.IO.File.ReadAllText(args[0]));
-                    Chunk chunk = parser.ParseChunk();
+                    Chunk chunk = parser.ParseChunk(vm.lastPrototypeID);
                     status = vm.ExecuteChunk(chunk);
                 }
                 catch (SyntaxErrorException err)
@@ -85,7 +85,7 @@ namespace CoolLanguage
                         else
                         {*/
                         Parser parser = new Parser(input);
-                        Chunk chunk = parser.ParseChunk();
+                        Chunk chunk = parser.ParseChunk(vm.lastPrototypeID);
                         status = vm.ExecuteChunk(chunk);
                     }
                     catch (SyntaxErrorException err)

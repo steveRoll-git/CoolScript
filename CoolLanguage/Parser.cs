@@ -420,6 +420,21 @@ namespace CoolLanguage
         }
     }
 
+    class CreateClosureTree : Tree
+    {
+        public int prototypeId;
+
+        public CreateClosureTree(int prototypeId)
+        {
+            this.prototypeId = prototypeId;
+        }
+
+        public override VMInstruction[] GetInstructions()
+        {
+            return new VMInstruction[] { new VMInstruction(InstructionType.CreateClosure, prototypeId) };
+        }
+    }
+
     class BlockTree : Tree
     {
         public List<Tree> statements = new List<Tree>();
@@ -516,7 +531,8 @@ namespace CoolLanguage
         None,
         Chunk,
         If,
-        While
+        While,
+        Function
     }
 
     class Scope
@@ -564,11 +580,14 @@ namespace CoolLanguage
         static Token kFalse = new Token(TokenType.Keyword, "false");
         static Token kNull = new Token(TokenType.Keyword, "null");
 
+        static Token kFunction = new Token(TokenType.Keyword, "function");
+
         static Token kElse = new Token(TokenType.Keyword, "else");
 
         private List<Scope> scopes = new List<Scope>();
 
         private int functionIdCount = 0;
+        private int prototypeOffset = 0;
 
         private List<FunctionPrototype> prototypes = new List<FunctionPrototype>();
 
@@ -740,6 +759,13 @@ namespace CoolLanguage
                 return tree;
             }
 
+            if (accept(kFunction).valid)
+            {
+                int protoId = ParseFunctionDeclaration();
+
+                return new CreateClosureTree(protoId);
+            }
+
             /*expect(lParen);
             Tree exp = ParseExpression();
             expect(rParen);*/
@@ -877,7 +903,7 @@ namespace CoolLanguage
             throw new SyntaxErrorException(curToken.line, "Did not expect " + curToken + " here");
         }
 
-        private BlockTree ParseBlock(ScopeType type, Token endsWith, bool isFunction = false)
+        private BlockTree ParseBlock(ScopeType type, Token endsWith, bool isFunction = false, string[] localVars = null)
         {
             Scope last = null;
             bool hasLast = scopes.Count > 0;
@@ -888,6 +914,12 @@ namespace CoolLanguage
             if (isFunction)
             {
                 newScope.functionId = functionIdCount++;
+                for(int i = 0; i < localVars.Length; i++)
+                {
+                    newScope.localVariables.Add(localVars[i], i);
+                }
+                newScope.localCount = localVars.Length;
+                newScope.maxLocalCount = localVars.Length;
             }
             else if (hasLast)
             {
@@ -925,7 +957,7 @@ namespace CoolLanguage
                 last.maxLocalCount = Math.Max(last.maxLocalCount, newScope.maxLocalCount);
             }
 
-            if (scopes.Count > 0)
+            if (hasLast && !isFunction)
                 block.localCount = last.maxLocalCount;
             else
                 block.localCount = newScope.maxLocalCount;
@@ -945,8 +977,34 @@ namespace CoolLanguage
             }
         }
 
-        public Chunk ParseChunk()
+        private int ParseFunctionDeclaration() // starts with argument lParen
         {
+            List<string> arguments = new List<string>();
+
+            expect(lParen);
+
+            if (!accept(rParen).valid)
+            {
+                do
+                {
+                    arguments.Add(expect(Token.Identifier).value);
+                } while (accept(comma).valid);
+                expect(rParen);
+            }
+
+            expect(lCurly);
+
+            BlockTree block = ParseBlock(ScopeType.Function, rCurly, true, arguments.ToArray());
+
+            prototypes.Add(new FunctionPrototype(block.GetInstructions(), block.localCount, arguments.Count));
+
+            return prototypes.Count - 1;
+        }
+
+        public Chunk ParseChunk(int prototypeOffset)
+        {
+            this.prototypeOffset = prototypeOffset;
+
             BlockTree block = ParseBlock(ScopeType.Chunk, Token.EOF);
 
             prototypes.Add(new FunctionPrototype(block.GetInstructions(), block.localCount));

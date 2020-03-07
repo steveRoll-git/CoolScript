@@ -1,9 +1,7 @@
-var testArr = ["a", "b", "c"]
-
-testArr[3] = true
-
-var i = 0
-while(i < 4){
-	print(testArr[i])
-	i = i + 1
+var testFunction = function(a, b){
+	print("the sum of " .. a .. " and " .. b .. " is " .. a + b)
 }
+
+testFunction(123, 456)
+
+testFunction(-111, 1000)

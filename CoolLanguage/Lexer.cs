@@ -9,6 +9,7 @@ namespace CoolLanguage
         static Dictionary<string, bool> keywords = new Dictionary<string, bool>
         {
             {"var", true},
+            {"function", true },
 
             {"if", true },
             {"else", true },

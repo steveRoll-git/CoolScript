@@ -87,13 +87,17 @@ namespace CoolLanguage.VM
     {
         public int stackSize;
 
+        public int argCount;
+
         public VMInstruction[] instructions;
 
-        public FunctionPrototype(VMInstruction[] insts, int _stackSize)
+        public FunctionPrototype(VMInstruction[] insts, int _stackSize, int argCount = 0)
         {
             instructions = insts;
 
             stackSize = _stackSize;
+
+            this.argCount = argCount;
         }
     }
 
