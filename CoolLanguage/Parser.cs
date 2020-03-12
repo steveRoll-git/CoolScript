@@ -965,7 +965,7 @@ namespace CoolLanguage
             Scope newScope = new Scope(type);
             if (isFunction)
             {
-                newScope.functionId = functionIdCount++;
+                newScope.functionId = ++functionIdCount;
                 for(int i = 0; i < localVars.Length; i++)
                 {
                     newScope.localVariables.Add(localVars[i], i);
