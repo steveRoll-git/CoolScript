@@ -1,9 +1,10 @@
 var other = 999;
 
-var multiply = function(x){
+function multiply(x){
 	print("alright, let's go")
-	print("multiplying " .. x .. "... it's " .. x * 2)
-	return x * 2
+	var result = x * 2
+	print("multiplying " .. x .. "... it's " .. result)
+	return result
 }
 
 var num = tonumber(input("what number "))

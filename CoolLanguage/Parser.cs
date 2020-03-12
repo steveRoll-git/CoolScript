@@ -796,9 +796,7 @@ namespace CoolLanguage
 
             if (accept(kFunction).valid)
             {
-                int protoId = ParseFunctionDeclaration();
-
-                return new CreateClosureTree(protoId + prototypeOffset);
+                return ParseFunctionDeclaration();
             }
 
             /*expect(lParen);
@@ -865,6 +863,16 @@ namespace CoolLanguage
                     last.maxLocalCount = Math.Max(last.localCount, last.maxLocalCount);
 
                     return new LocalAssignmentTree(last.localCount - 1, expression);
+                }
+                else if (keyword.value == "function")
+                {
+                    string name = expect(Token.Identifier).value;
+
+                    CreateClosureTree funcTree = ParseFunctionDeclaration();
+
+                    GlobalAssignmentTree tree = new GlobalAssignmentTree(name, funcTree);
+
+                    return tree;
                 }
                 else if (keyword.value == "if")
                 {
@@ -1029,7 +1037,7 @@ namespace CoolLanguage
             }
         }
 
-        private int ParseFunctionDeclaration() // starts with argument lParen
+        private CreateClosureTree ParseFunctionDeclaration() // starts with argument lParen
         {
             List<string> arguments = new List<string>();
 
@@ -1050,7 +1058,7 @@ namespace CoolLanguage
 
             prototypes.Add(new FunctionPrototype(block.GetInstructions(), block.localCount, arguments.Count));
 
-            return prototypes.Count - 1;
+            return new CreateClosureTree(prototypes.Count - 1 + prototypeOffset);
         }
 
         public Chunk ParseChunk(int prototypeOffset)
