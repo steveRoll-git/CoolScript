@@ -1,7 +1,11 @@
-var testFunction = function(a, b){
-	print("the sum of " .. a .. " and " .. b .. " is " .. a + b)
+var other = 999;
+
+var multiply = function(x){
+	print("alright, let's go")
+	print("multiplying " .. x .. "... it's " .. x * 2)
+	return x * 2
 }
 
-testFunction(123, 456)
+var num = tonumber(input("what number "))
 
-testFunction(-111, 1000)
+print("mult is " .. multiply(num))

@@ -48,6 +48,10 @@ namespace CoolLanguage.VM
 
         /// <summary> parameter: int args. calls the last item on the stack, and uses specified number of previous items as arguments (in the order they were added) </summary>
         Call,
+        /// <summary> parameter: bool hasValue. returns from the current function, and optionally sets the return register to the popped stack value </summary>
+        Return,
+        /// <summary> pushes the value of the return register onto the stack </summary>
+        PushReturn,
 
         /// <summary> pops the last two values and pushes their addition result </summary>
         Add,
@@ -191,6 +195,8 @@ namespace CoolLanguage.VM
         Stack<ScriptValue> valueStack = new Stack<ScriptValue>();
 
         Dictionary<string, ScriptValue> globalVars = new Dictionary<string, ScriptValue>();
+
+        ScriptValue returnRegister;
 
         Dictionary<int, Table> tableStorage = new Dictionary<int, Table>();
         private int lastTableID = 0;
@@ -485,7 +491,6 @@ namespace CoolLanguage.VM
                                     args[a] = value;
                             }
 
-                            //TODO return value here
                             ExecutionStatus status = Run(theClosure, args);
                             if (!status.success)
                             {
@@ -523,7 +528,7 @@ namespace CoolLanguage.VM
                             return new ExecutionStatus(false, status.errorMessage);
                         }
 
-                        valueStack.Push(status.returnValue);
+                        returnRegister = status.returnValue;
                     }
                     else
                     {
@@ -628,12 +633,26 @@ namespace CoolLanguage.VM
 
                     valueStack.Push(new ScriptValue(dataType.Number, -value.value));
                 }
+                else if (instruction.type == InstructionType.Return)
+                {
+                    if (instruction.data)
+                    {
+                        returnRegister = valueStack.Pop();
+                    }
+                    return new ExecutionStatus(true);
+                }
+                else if (instruction.type == InstructionType.PushReturn)
+                {
+                    valueStack.Push(returnRegister);
+                }
 
                 if (incrementIP)
                 {
                     instance.instructionPointer++;
                 }
             }
+
+            returnRegister = ScriptValue.Null;
 
             return new ExecutionStatus(true);
         }

@@ -349,6 +349,8 @@ namespace CoolLanguage
 
         public Tree functionTree;
 
+        public bool isExpression = false;
+
         public FunctionCallTree(Tree function)
         {
             type = TreeType.FunctionCall;
@@ -373,6 +375,11 @@ namespace CoolLanguage
             instructions.AddRange(functionTree.GetInstructions());
 
             instructions.Add(new VMInstruction(InstructionType.Call, arguments.Count));
+
+            if (isExpression)
+            {
+                instructions.Add(new VMInstruction(InstructionType.PushReturn));
+            }
 
             return instructions.ToArray();
         }
@@ -523,6 +530,34 @@ namespace CoolLanguage
             toReturn.Add(new VMInstruction(InstructionType.Jump, -bodyInstructions.Length - conditionInstructions.Length - 1));
 
             return toReturn.ToArray();
+        }
+    }
+
+    class ReturnTree : Tree
+    {
+        public Tree value;
+
+        public ReturnTree(Tree value = null)
+        {
+            type = TreeType.ReturnStatement;
+
+            this.value = value;
+        }
+
+        public override VMInstruction[] GetInstructions()
+        {
+            if (value != null)
+            {
+                List<VMInstruction> toReturn = new List<VMInstruction>();
+                toReturn.AddRange(value.GetInstructions());
+                toReturn.Add(new VMInstruction(InstructionType.Return, true));
+                return toReturn.ToArray();
+            }
+            else
+            {
+                return new VMInstruction[] { new VMInstruction(InstructionType.Return, false) };
+            }
+            
         }
     }
 
@@ -763,7 +798,7 @@ namespace CoolLanguage
             {
                 int protoId = ParseFunctionDeclaration();
 
-                return new CreateClosureTree(protoId);
+                return new CreateClosureTree(protoId + prototypeOffset);
             }
 
             /*expect(lParen);
@@ -771,6 +806,12 @@ namespace CoolLanguage
             expect(rParen);*/
 
             Tree obj = ParseIndexOrCall();
+
+            if (obj.type == TreeType.FunctionCall)
+            {
+                (obj as FunctionCallTree).isExpression = true;
+            }
+
             return obj;
         }
 
@@ -856,6 +897,17 @@ namespace CoolLanguage
                     expect(rParen);
 
                     tree.body = ParseBlockOrStatement(ScopeType.While);
+
+                    return tree;
+                }
+                else if (keyword.value == "return")
+                {
+                    ReturnTree tree = new ReturnTree();
+
+                    if (curToken.type != TokenType.Punctuation)
+                    {
+                        tree.value = ParseExpression();
+                    }
 
                     return tree;
                 }

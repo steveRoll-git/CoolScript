@@ -10,6 +10,7 @@ namespace CoolLanguage
         {
             {"var", true},
             {"function", true },
+            {"return", true },
 
             {"if", true },
             {"else", true },
