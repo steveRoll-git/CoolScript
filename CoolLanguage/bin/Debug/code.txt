@@ -1,12 +1,8 @@
-var other = 999;
+var i = 0
 
-function multiply(x){
-	print("alright, let's go")
-	var result = x * 2
-	print("multiplying " .. x .. "... it's " .. result)
-	return result
+randomseed(0)
+
+while(i < 10){
+	print(random(2, 6))
+	i = i + 1
 }
-
-var num = tonumber(input("what number "))
-
-print("mult is " .. multiply(num))
