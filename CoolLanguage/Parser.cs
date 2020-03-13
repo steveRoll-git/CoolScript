@@ -735,6 +735,9 @@ namespace CoolLanguage
                 }
             }
 
+            if (theObject.type == TreeType.FunctionCall)
+                (theObject as FunctionCallTree).isExpression = true;
+
             if (accept(dot).valid)
             {
                 //index using identifier
@@ -772,6 +775,9 @@ namespace CoolLanguage
 
                 return ParseIndexOrCall(tree);
             }
+
+            if (theObject.type == TreeType.FunctionCall)
+                (theObject as FunctionCallTree).isExpression = false;
 
             return theObject;
         }
