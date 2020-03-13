@@ -719,15 +719,21 @@ namespace CoolLanguage.VM
             return new ExecutionStatus(true);
         }
 
-        public ExecutionStatus ExecuteChunk(Chunk chunk)
+        public Closure LoadChunk(Chunk chunk)
         {
-            //int firstId = lastPrototypeID;
             foreach (FunctionPrototype prototype in chunk.prototypes)
             {
                 functionPrototypes.Add(lastPrototypeID++, prototype);
             }
 
-            return Run(new Closure(functionPrototypes[functionPrototypes.Count - 1]), new ScriptValue[0]);
+            return new Closure(functionPrototypes[functionPrototypes.Count - 1]);
+        }
+
+        public ExecutionStatus ExecuteChunk(Chunk chunk)
+        {
+            //int firstId = lastPrototypeID;
+            Closure closure = LoadChunk(chunk);
+            return Run(closure, new ScriptValue[0]);
         }
 
         public ScriptValue getStackLast()
