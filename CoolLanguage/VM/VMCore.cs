@@ -384,7 +384,7 @@ namespace CoolLanguage.VM
                         {
                             if (index.type != dataType.String)
                             {
-                                return new ExecutionStatus(false, "Attempt to index table with " + index.type + " value");
+                                return new ExecutionStatus(false, "Attempt to index table with " + index.TypeName + " value");
                             }
                             else
                             {
@@ -411,7 +411,7 @@ namespace CoolLanguage.VM
                         {
                             if (index.type != dataType.Number)
                             {
-                                return new ExecutionStatus(false, "Attempt to index array with " + index.type + " value");
+                                return new ExecutionStatus(false, "Attempt to index array with " + index.TypeName + " value");
                             }
                             else if (!Util.isWhole(index.value) || index.value < 0D)
                             {
@@ -439,7 +439,7 @@ namespace CoolLanguage.VM
                     }
                     else
                     {
-                        return new ExecutionStatus(false, "Attempt to index a " + obj.type + " value");
+                        return new ExecutionStatus(false, "Attempt to index a " + obj.TypeName + " value");
                     }
                 }
                 else if (instruction.type == InstructionType.SetIndex)
@@ -455,7 +455,7 @@ namespace CoolLanguage.VM
                         {
                             if (index.type != dataType.String)
                             {
-                                return new ExecutionStatus(false, "Attempt to index table with " + index.type + " value");
+                                return new ExecutionStatus(false, "Attempt to index table with " + index.TypeName + " value");
                             }
                             else
                             {
@@ -475,7 +475,7 @@ namespace CoolLanguage.VM
                         {
                             if (index.type != dataType.Number)
                             {
-                                return new ExecutionStatus(false, "Attempt to index array with " + index.type + " value");
+                                return new ExecutionStatus(false, "Attempt to index array with " + index.TypeName + " value");
                             }
                             else if (!Util.isWhole(index.value) || index.value < 0D)
                             {
@@ -504,7 +504,7 @@ namespace CoolLanguage.VM
                     }
                     else
                     {
-                        return new ExecutionStatus(false, "Attempt to index a " + obj.type + " value");
+                        return new ExecutionStatus(false, "Attempt to index a " + obj.TypeName + " value");
                     }
                 }
                 else if (instruction.type == InstructionType.Call)
