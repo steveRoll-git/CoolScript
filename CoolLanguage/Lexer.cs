@@ -73,6 +73,13 @@ namespace CoolLanguage
             {"..", true }
         };
 
+        static Dictionary<char, char> escapeChars = new Dictionary<char, char>
+        {
+            {'"', '"' },
+            {'\'', '\'' },
+            {'n', '\n' },
+        };
+
         public Lexer(string theCode)
         {
             code = theCode;
@@ -140,7 +147,6 @@ namespace CoolLanguage
                         char stringStart = currentChar;
 
                         doing = TokenType.String;
-                        bool nextRaw = false;
 
                         //Console.WriteLine("string start");
 
@@ -152,20 +158,27 @@ namespace CoolLanguage
                             {
                                 throw new SyntaxErrorException(currentLine, "unfinished string");
                             }
-                            else if (currentChar == stringStart && !nextRaw)
+                            else if (currentChar == stringStart)
                             {
                                 currentPos++;
                                 break;
                             }
-                            else if (currentChar == '\\' && !nextRaw)
+                            else if (currentChar == '\\')
                             {
-                                nextRaw = true;
+                                currentPos++;
+                                if (escapeChars.TryGetValue(currentChar, out char escapeChar))
+                                {
+                                    tokenValue += escapeChar;
+                                }
+                                else
+                                {
+                                    throw new SyntaxErrorException(currentLine, "invalid escape sequence");
+                                }
                             }
                             else
                             {
                                 tokenValue += currentChar;
                                 //Console.WriteLine("!" + tokenValue);
-                                nextRaw = false;
                             }
                         }
                     }
