@@ -45,8 +45,12 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
-    <None Include="bin\Debug\examples\factorial.cool" />
-    <None Include="bin\Debug\examples\multiplicationGame.cool" />
+    <None Include="examples\factorial.cool">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </None>
+    <None Include="examples\multiplicationGame.cool">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </None>
     <None Include="Calculator.cs" />
     <Compile Include="ErrorTypes.cs" />
     <Compile Include="Parser.cs" />
@@ -63,7 +67,6 @@
     <None Include="App.config" />
   </ItemGroup>
   <ItemGroup>
-    <Content Include="bin\Debug\code.txt" />
     <Content Include="oldParserTest.txt" />
   </ItemGroup>
   <ItemGroup />

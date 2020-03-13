@@ -1,0 +1,19 @@
+﻿var score = 0
+
+var question = 0
+
+while(question < 10){
+	print("Question " .. question + 1 .. ":")
+	var numberA = random(2, 11)
+	var numberB = random(2, 11)
+	var result = tonumber(input((numberA .. " * " .. numberB .. " = ")))
+	if(result == numberA * numberB){
+		score = score + 1
+		print("Correct!" .. "\n")
+	}else{
+		print("Wrong! The correct answer is " .. numberA * numberB .. "\n")
+	}
+	question = question + 1
+}
+
+print("You scored " .. score .. " points!")

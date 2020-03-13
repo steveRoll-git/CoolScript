@@ -1,7 +1,0 @@
-var testTable = {
-	thing: 1,
-	"wow yeah": true
-}
-
-print(testTable.thing)
-print(testTable["wow yeah"])
