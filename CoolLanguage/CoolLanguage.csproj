@@ -45,6 +45,8 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
+    <None Include="bin\Debug\examples\factorial.cool" />
+    <None Include="bin\Debug\examples\multiplicationGame.cool" />
     <None Include="Calculator.cs" />
     <Compile Include="ErrorTypes.cs" />
     <Compile Include="Parser.cs" />
