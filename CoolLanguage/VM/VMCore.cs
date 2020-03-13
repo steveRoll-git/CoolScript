@@ -223,84 +223,7 @@ namespace CoolLanguage.VM
             return new CFuncStatus(funcName + " arg #" + argNumber + ": expected " + expected + (got != "" ? (", got " + got) : ""));
         }
 
-        static Dictionary<string, Func<ScriptValue[], CFuncStatus>> defaultFunctions = new Dictionary<string, Func<ScriptValue[], CFuncStatus>>
-        {
-            {"type", (ScriptValue[] args) => {
-                if (args.Length <= 0)
-                    return argError("type", 1, "value");
-                return new CFuncStatus(new ScriptValue(dataType.String, args[0].TypeName));
-            } },
-            {"print", (ScriptValue[] args) => {
-                Console.WriteLine(string.Join("\t", args));
-                return new CFuncStatus(ScriptValue.Null);
-            } },
-            {"input", (ScriptValue[] args) =>
-            {
-                if (args.Length > 0)
-                    Console.Write(args[0].value);
-
-                return new CFuncStatus(new ScriptValue(dataType.String, Console.ReadLine()));
-            } },
-            {"tonumber", (ScriptValue[] args) =>
-            {
-                if (args.Length <= 0)
-                    return argError("tonumber", 1, "value");
-
-                if (args[0].type == dataType.Number)
-                {
-                     return new CFuncStatus(args[0]);
-                }
-                else if (args[0].type == dataType.String)
-                {
-                    double result;
-                    if(double.TryParse(args[0].value, out result))
-                    {
-                        return new CFuncStatus(new ScriptValue(dataType.Number, result));
-                    }
-                }
-                return new CFuncStatus(ScriptValue.Null);
-            } },
-            {"tostring", (ScriptValue[] args) =>
-            {
-                if (args.Length <= 0)
-                    return argError("tostring", 1, "value");
-
-                return new CFuncStatus(new ScriptValue(dataType.String, args[0].ToString()));
-            } },
-            {"random", (ScriptValue[] args) =>
-            {
-                if (args.Length == 0)
-                {
-                    return new CFuncStatus(new ScriptValue(dataType.Number, randomGenerator.NextDouble()));
-                }
-                else if (args.Length == 1)
-                {
-                    if(args[0].type != dataType.Number)
-                        return argError("random", 1, "number", args[0].TypeName);
-                    return new CFuncStatus(new ScriptValue(dataType.Number, Math.Floor(randomGenerator.NextDouble() * args[0].value)));
-                }
-                else
-                {
-                    if(args[0].type != dataType.Number)
-                        return argError("random", 1, "number", args[0].TypeName);
-                    if(args[1].type != dataType.Number)
-                        return argError("random", 2, "number", args[1].TypeName);
-                    return new CFuncStatus(new ScriptValue(dataType.Number, Math.Floor(args[0].value + randomGenerator.NextDouble() * (args[1].value - args[0].value))));
-                }
-            } },
-            {"randomseed", (ScriptValue[] args) =>
-            {
-                if (args.Length <= 0)
-                    return argError("randomseed", 1, "value");
-
-                if(args[0].type != dataType.Number)
-                    return argError("randomseed", 1, "number", args[0].TypeName);
-
-                randomGenerator = new Random((int)(double)args[0].value);
-
-                return new CFuncStatus(ScriptValue.Null);
-            } },
-        };
+        
 
         private int lastCFunctionID = 0;
 
@@ -311,6 +234,84 @@ namespace CoolLanguage.VM
 
         public CoolScriptVM()
         {
+            Dictionary<string, Func<ScriptValue[], CFuncStatus>> defaultFunctions = new Dictionary<string, Func<ScriptValue[], CFuncStatus>>
+            {
+                {"type", (ScriptValue[] args) => {
+                    if (args.Length <= 0)
+                        return argError("type", 1, "value");
+                    return new CFuncStatus(new ScriptValue(dataType.String, args[0].TypeName));
+                } },
+                {"print", (ScriptValue[] args) => {
+                    Console.WriteLine(string.Join("\t", args));
+                    return new CFuncStatus(ScriptValue.Null);
+                } },
+                {"input", (ScriptValue[] args) =>
+                {
+                    if (args.Length > 0)
+                        Console.Write(args[0].value);
+
+                    return new CFuncStatus(new ScriptValue(dataType.String, Console.ReadLine()));
+                } },
+                {"tonumber", (ScriptValue[] args) =>
+                {
+                    if (args.Length <= 0)
+                        return argError("tonumber", 1, "value");
+
+                    if (args[0].type == dataType.Number)
+                    {
+                         return new CFuncStatus(args[0]);
+                    }
+                    else if (args[0].type == dataType.String)
+                    {
+                        double result;
+                        if(double.TryParse(args[0].value, out result))
+                        {
+                            return new CFuncStatus(new ScriptValue(dataType.Number, result));
+                        }
+                    }
+                    return new CFuncStatus(ScriptValue.Null);
+                } },
+                {"tostring", (ScriptValue[] args) =>
+                {
+                    if (args.Length <= 0)
+                        return argError("tostring", 1, "value");
+
+                    return new CFuncStatus(new ScriptValue(dataType.String, args[0].ToString()));
+                } },
+                {"random", (ScriptValue[] args) =>
+                {
+                    if (args.Length == 0)
+                    {
+                        return new CFuncStatus(new ScriptValue(dataType.Number, randomGenerator.NextDouble()));
+                    }
+                    else if (args.Length == 1)
+                    {
+                        if(args[0].type != dataType.Number)
+                            return argError("random", 1, "number", args[0].TypeName);
+                        return new CFuncStatus(new ScriptValue(dataType.Number, Math.Floor(randomGenerator.NextDouble() * args[0].value)));
+                    }
+                    else
+                    {
+                        if(args[0].type != dataType.Number)
+                            return argError("random", 1, "number", args[0].TypeName);
+                        if(args[1].type != dataType.Number)
+                            return argError("random", 2, "number", args[1].TypeName);
+                        return new CFuncStatus(new ScriptValue(dataType.Number, Math.Floor(args[0].value + randomGenerator.NextDouble() * (args[1].value - args[0].value))));
+                    }
+                } },
+                {"randomseed", (ScriptValue[] args) =>
+                {
+                    if (args.Length <= 0)
+                        return argError("randomseed", 1, "value");
+
+                    if(args[0].type != dataType.Number)
+                        return argError("randomseed", 1, "number", args[0].TypeName);
+
+                    randomGenerator = new Random((int)(double)args[0].value);
+
+                    return new CFuncStatus(ScriptValue.Null);
+                } },
+            };
             foreach (var function in defaultFunctions)
             {
                 AddCFunction(function.Value, function.Key);
