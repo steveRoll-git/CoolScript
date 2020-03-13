@@ -337,7 +337,7 @@ namespace CoolLanguage
             Array.Copy(indexInstructions, 0, toReturn, objectInstructions.Length, indexInstructions.Length);
             Array.Copy(valueInstructions, 0, toReturn, objectInstructions.Length + indexInstructions.Length, valueInstructions.Length);
 
-            toReturn[toReturn.Length - 1] = new VMInstruction(InstructionType.SetIndex);
+            toReturn[toReturn.Length - 1] = new VMInstruction(InstructionType.SetIndex, false);
 
             return toReturn;
         }
@@ -387,14 +387,32 @@ namespace CoolLanguage
 
     class CreateTableTree : Tree
     {
+        private List<TableKeyValue> values = new List<TableKeyValue>();
+
         public CreateTableTree()
         {
             type = TreeType.CreateTable;
         }
 
+        public void AddValue(TableKeyValue value)
+        {
+            values.Add(value);
+        }
+
         public override VMInstruction[] GetInstructions()
         {
-            return new VMInstruction[] { new VMInstruction(InstructionType.CreateTable) };
+            List<VMInstruction> instructions = new List<VMInstruction>();
+
+            instructions.Add(new VMInstruction(InstructionType.CreateTable));
+
+            for (int i = 0; i < values.Count; i++)
+            {
+                instructions.Add(new VMInstruction(InstructionType.PushString, values[i].key));
+                instructions.AddRange(values[i].value.GetInstructions());
+                instructions.Add(new VMInstruction(InstructionType.SetIndex, true));
+            }
+
+            return instructions.ToArray();
         }
     }
 
@@ -590,6 +608,18 @@ namespace CoolLanguage
         }
     }
 
+    struct TableKeyValue
+    {
+        public string key;
+        public Tree value;
+
+        public TableKeyValue(string key, Tree value)
+        {
+            this.key = key;
+            this.value = value;
+        }
+    }
+
     class Parser
     {
         public Lexer lexer;
@@ -610,6 +640,7 @@ namespace CoolLanguage
         static Token dot = new Token(TokenType.Punctuation, ".");
         static Token semicolon = new Token(TokenType.Punctuation, ";");
         static Token comma = new Token(TokenType.Punctuation, ",");
+        static Token colon = new Token(TokenType.Punctuation, ":");
 
         static Token kTrue = new Token(TokenType.Keyword, "true");
         static Token kFalse = new Token(TokenType.Keyword, "false");
@@ -774,9 +805,27 @@ namespace CoolLanguage
             Token curly = accept(lCurly);
             if (curly.valid)
             {
-                //TODO table definition here
-                expect(rCurly);
-                return new CreateTableTree();
+                CreateTableTree tree = new CreateTableTree();
+                if (!accept(rCurly).valid)
+                {
+                    do
+                    {
+                        Token keyName = accept(Token.String);
+                        if (!keyName.valid)
+                            keyName = accept(Token.Identifier);
+
+                        if (!keyName.valid)
+                            throw new SyntaxErrorException(curToken.line, "table key must be identifier or string (was " + curToken.type + ")");
+
+                        expect(colon);
+
+                        Tree value = ParseExpression();
+
+                        tree.AddValue(new TableKeyValue(keyName.value, value));
+                    } while (accept(comma).valid);
+                    expect(rCurly);
+                }
+                return tree;
             }
 
             Token square = accept(lSquare);

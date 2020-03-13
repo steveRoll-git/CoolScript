@@ -28,7 +28,7 @@ namespace CoolLanguage.VM
 
         /// <summary> pops index, pops object, and pushes the value on it </summary>
         GetIndex,
-        /// <summary> pops value, pops index, pops object, and sets the value </summary>
+        /// <summary> parameter: bool keep. pops value, pops index, and if keep is false - pops object, and sets the value. </summary>
         SetIndex,
 
         /// <summary> creates an empty table and pushes it onto the stack </summary>
@@ -446,7 +446,7 @@ namespace CoolLanguage.VM
                 {
                     ScriptValue setValue = valueStack.Pop();
                     ScriptValue index = valueStack.Pop();
-                    ScriptValue obj = valueStack.Pop();
+                    ScriptValue obj = instruction.data ? valueStack.Peek() : valueStack.Pop();
 
                     if (obj.type == dataType.Table)
                     {

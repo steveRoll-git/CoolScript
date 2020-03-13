@@ -1,8 +1,7 @@
-var i = 0
-
-randomseed(0)
-
-while(i < 10){
-	print(random(2, 6))
-	i = i + 1
+var testTable = {
+	thing: 1,
+	"wow yeah": true
 }
+
+print(testTable.thing)
+print(testTable["wow yeah"])
