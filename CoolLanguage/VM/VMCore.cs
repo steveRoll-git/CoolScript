@@ -278,6 +278,32 @@ namespace CoolLanguage.VM
 
                     return new CFuncStatus(new ScriptValue(dataType.String, args[0].ToString()));
                 } },
+                {"length", (ScriptValue[] args) =>
+                {
+                    if (args.Length <= 0)
+                        return argError("length", 1, "value");
+
+                    if(args[0].type == dataType.String)
+                    {
+                        return new CFuncStatus(new ScriptValue(dataType.Number, (double)args[0].value.Length));
+                    }
+                    else if(args[0].type == dataType.Array)
+                    {
+                        if(arrayStorage.TryGetValue(args[0].value, out ScriptArray array))
+                        {
+                            return new CFuncStatus(new ScriptValue(dataType.Number, (double)array.list.Count));
+                        }
+                        else
+                        {
+                            //normally this shouldn't happen
+                            return new CFuncStatus("Array " + args[0].value + " doesn't exist");
+                        }
+                    }
+                    else
+                    {
+                        return argError("length", 1, "string or array", args[0].TypeName);
+                    }
+                } },
                 {"random", (ScriptValue[] args) =>
                 {
                     if (args.Length == 0)
