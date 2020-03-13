@@ -216,7 +216,7 @@ namespace CoolLanguage.VM
             private set;
         } = 0;
 
-        public static Random randomGenerator = new Random();
+        Random randomGenerator = new Random();
 
         static CFuncStatus argError(string funcName, int argNumber, string expected, string got = "")
         {
