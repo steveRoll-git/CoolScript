@@ -101,6 +101,11 @@ namespace CoolLanguage.VM
             type = t;
             data = d;
         }
+
+        public override string ToString()
+        {
+            return type + " " + data;
+        }
     }
 
     struct ExecutionStatus
