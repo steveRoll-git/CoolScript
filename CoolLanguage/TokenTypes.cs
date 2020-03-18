@@ -122,7 +122,7 @@ namespace CoolLanguage
 
         public override string ToString()
         {
-            return type == TokenType.EndOfFile ? "<" + type + ">" : "'" + value + "'";
+            return (type == TokenType.EndOfFile || type == TokenType.String && (value.Length >= 10 || value.Contains("\n"))) ? "<" + type + ">" : "'" + value + "'";
         }
 
         public static Token Identifier = new Token(TokenType.Identifier);
