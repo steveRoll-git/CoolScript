@@ -197,6 +197,8 @@ namespace CoolLanguage.VM
             (ScriptValue a, ScriptValue b) => Util.isTruthyValue(a) ? a : b, // or
         };
 
+        private List<ClosureInstance> callStack = new List<ClosureInstance>();
+
         Stack<ScriptValue> valueStack = new Stack<ScriptValue>();
 
         Dictionary<string, ScriptValue> globalVars = new Dictionary<string, ScriptValue>();
@@ -383,6 +385,8 @@ namespace CoolLanguage.VM
         public ExecutionStatus Run(Closure closure, ScriptValue[] arguments)
         {
             ClosureInstance instance = new ClosureInstance(closure);
+
+            callStack.Add(instance);
 
             for (int i = 0; i < arguments.Length; i++)
             {
@@ -751,6 +755,8 @@ namespace CoolLanguage.VM
             }
 
             returnRegister = ScriptValue.Null;
+
+            callStack.RemoveAt(callStack.Count - 1);
 
             return new ExecutionStatus(true);
         }
