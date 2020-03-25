@@ -75,11 +75,13 @@ namespace CoolLanguage.VM
 
     class Table
     {
+        public byte mark = 0;
         public Dictionary<string, ScriptValue> dictionary = new Dictionary<string, ScriptValue>();
     }
 
     class ScriptArray
     {
+        public byte mark = 0;
         public List<ScriptValue> list = new List<ScriptValue>();
     }
 

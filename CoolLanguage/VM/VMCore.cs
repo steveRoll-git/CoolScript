@@ -3,6 +3,20 @@ using System.Collections.Generic;
 
 namespace CoolLanguage.VM
 {
+    class ScriptRuntimeException : Exception
+    {
+        public ScriptRuntimeException()
+        {
+
+        }
+
+        public ScriptRuntimeException(string details)
+            : base(String.Format("Runtime error: {0}", details))
+        {
+
+        }
+    }
+
     enum InstructionType
     {
         /// <summary> parameter: double number. pushes the number onto the stack </summary>
@@ -430,6 +444,8 @@ namespace CoolLanguage.VM
                     ScriptValue theValue = valueStack.Pop();
 
                     globalVars[instruction.data] = theValue;
+
+                    GC_FullCycle();
                 }
                 else if (instruction.type == InstructionType.GetLocal)
                 {
@@ -438,6 +454,8 @@ namespace CoolLanguage.VM
                 else if (instruction.type == InstructionType.SetLocal)
                 {
                     instance.stackFrame[instruction.data] = valueStack.Pop();
+
+                    GC_FullCycle();
                 }
                 else if (instruction.type == InstructionType.GetIndex)
                 {
@@ -636,6 +654,8 @@ namespace CoolLanguage.VM
                     {
                         return new ExecutionStatus(false, "Attempt to call a " + function.TypeName + " value");
                     }
+
+                    GC_FullCycle();
                 }
                 else if (instruction.type == InstructionType.CreateTable)
                 {
@@ -793,6 +813,94 @@ namespace CoolLanguage.VM
         public void ClearStack()
         {
             valueStack.Clear();
+        }
+
+        byte lastGCMark = 0;
+
+        private void GC_MarkValue(ScriptValue value)
+        {
+            if (value.type == dataType.Array)
+            {
+                if (arrayStorage.TryGetValue(value.value, out ScriptArray array))
+                {
+                    array.mark++;
+                    GC_MarkCollection(array.list);
+                }
+                else
+                {
+                    throw new ScriptRuntimeException("array " + value.value + " doesn't exist");
+                }
+            }
+            else if (value.type == dataType.Table)
+            {
+                if (tableStorage.TryGetValue(value.value, out Table table))
+                {
+                    table.mark++;
+                    GC_MarkCollection(table.dictionary.Values);
+                }
+                else
+                {
+                    throw new ScriptRuntimeException("table " + value.value + " doesn't exist");
+                }
+            }
+        }
+
+        private void GC_MarkCollection(IEnumerable<ScriptValue> root)
+        {
+            foreach (ScriptValue value in root)
+            {
+                GC_MarkValue(value);
+            }
+        }
+
+        private void GC_Sweep()
+        {
+            List<int> array_ToRemove = new List<int>();
+            foreach (KeyValuePair<int, ScriptArray> pair in arrayStorage)
+            {
+                if (pair.Value.mark != lastGCMark)
+                {
+                    array_ToRemove.Add(pair.Key);
+                }
+            }
+            foreach (int key in array_ToRemove)
+            {
+                arrayStorage.Remove(key);
+                //Console.WriteLine("removed array " + key);
+            }
+
+            List<int> table_ToRemove = new List<int>();
+            foreach (KeyValuePair<int, Table> pair in tableStorage)
+            {
+                if (pair.Value.mark != lastGCMark)
+                {
+                    table_ToRemove.Add(pair.Key);
+                    //Console.WriteLine("removed table " + pair.Key + " " + pair.Value.mark + " vs " + lastGCMark);
+                }
+            }
+            foreach (int key in table_ToRemove)
+            {
+                tableStorage.Remove(key);
+            }
+
+        }
+
+        private void GC_FullCycle()
+        {
+            lastGCMark++;
+
+            GC_MarkCollection(globalVars.Values);
+
+            foreach (ClosureInstance instance in callStack)
+            {
+                GC_MarkCollection(instance.stackFrame);
+            }
+
+            GC_MarkValue(returnRegister);
+
+            //TODO add upvalues here
+
+            GC_Sweep();
         }
     }
 }
