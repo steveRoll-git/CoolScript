@@ -356,6 +356,31 @@ namespace CoolLanguage.VM
                     functionStorage.Add(id, newClosure);
                     return new CFuncStatus(new ScriptValue(dataType.Function, id));
                 } },
+                {"loadfile", (ScriptValue[] args) =>
+                {
+                    if (args.Length <= 0)
+                        return argError("loadfile", 1, "value");
+
+                    if(args[0].type != dataType.String)
+                        return argError("loadstring", 1, "string", args[0].TypeName);
+
+                    string content;
+
+                    try
+                    {
+                        content = System.IO.File.ReadAllText(args[0].value);
+                    }
+                    catch (Exception e)
+                    {
+                        return new CFuncStatus(e.Message);
+                    }
+
+                    Chunk chunk = new Parser(content).ParseChunk(lastPrototypeID);
+                    Closure newClosure = LoadChunk(chunk);
+                    int id = lastFunctionID++;
+                    functionStorage.Add(id, newClosure);
+                    return new CFuncStatus(new ScriptValue(dataType.Function, id));
+                } }
             };
             foreach (var function in defaultFunctions)
             {
