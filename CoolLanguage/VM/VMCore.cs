@@ -232,11 +232,6 @@ namespace CoolLanguage.VM
 
         private int lastCFunctionID = 0;
 
-        static ScriptValue globalFunc_type(ScriptValue[] args)
-        {
-            return new ScriptValue(dataType.String, args[0].TypeName);
-        }
-
         public CoolScriptVM()
         {
             Dictionary<string, Func<ScriptValue[], CFuncStatus>> defaultFunctions = new Dictionary<string, Func<ScriptValue[], CFuncStatus>>
