@@ -213,6 +213,7 @@ namespace CoolLanguage.VM
         private int lastFunctionID = 0;
 
         Dictionary<int, Func<ScriptValue[], CFuncStatus>> CFunctionStorage = new Dictionary<int, Func<ScriptValue[], CFuncStatus>>();
+        private int lastCFunctionID = 0;
 
         Dictionary<int, FunctionPrototype> functionPrototypes = new Dictionary<int, FunctionPrototype>();
         public int lastPrototypeID
@@ -227,10 +228,6 @@ namespace CoolLanguage.VM
         {
             return new CFuncStatus(funcName + " arg #" + argNumber + ": expected " + expected + (got != "" ? (", got " + got) : ""));
         }
-
-        
-
-        private int lastCFunctionID = 0;
 
         public CoolScriptVM()
         {
