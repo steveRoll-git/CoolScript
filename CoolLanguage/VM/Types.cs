@@ -107,6 +107,8 @@ namespace CoolLanguage.VM
     {
         public FunctionPrototype prototype;
 
+        public byte mark = 0;
+
         public Closure(FunctionPrototype prototype)
         {
             this.prototype = prototype;

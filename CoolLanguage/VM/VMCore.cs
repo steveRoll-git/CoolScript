@@ -684,6 +684,7 @@ namespace CoolLanguage.VM
                     if (functionPrototypes.TryGetValue(instruction.data, out FunctionPrototype prototype))
                     {
                         Closure newClosure = new Closure(prototype);
+                        newClosure.mark = lastGCMark;
                         int id = lastFunctionID++;
                         functionStorage.Add(id, newClosure);
 
@@ -851,6 +852,20 @@ namespace CoolLanguage.VM
                     throw new ScriptRuntimeException("table " + value.value + " doesn't exist");
                 }
             }
+            else if (value.type == dataType.Function)
+            {
+                if (functionStorage.TryGetValue(value.value, out Closure closure))
+                {
+                    if (closure.mark < lastGCMark)
+                    {
+                        closure.mark++;
+                    }
+                }
+                else
+                {
+                    throw new ScriptRuntimeException("function " + value.value + " doesn't exist");
+                }
+            }
         }
 
         private void GC_MarkCollection(IEnumerable<ScriptValue> root)
@@ -889,6 +904,20 @@ namespace CoolLanguage.VM
             foreach (int key in table_ToRemove)
             {
                 tableStorage.Remove(key);
+            }
+
+            List<int> closure_ToRemove = new List<int>();
+            foreach (KeyValuePair<int, Closure> pair in functionStorage)
+            {
+                if (pair.Value.mark != lastGCMark)
+                {
+                    closure_ToRemove.Add(pair.Key);
+                    //Console.WriteLine("removed table " + pair.Key + " " + pair.Value.mark + " vs " + lastGCMark);
+                }
+            }
+            foreach (int key in closure_ToRemove)
+            {
+                functionStorage.Remove(key);
             }
 
         }
