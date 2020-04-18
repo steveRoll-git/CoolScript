@@ -660,6 +660,7 @@ namespace CoolLanguage.VM
                 else if (instruction.type == InstructionType.CreateTable)
                 {
                     Table table = new Table();
+                    table.mark = lastGCMark;
                     int id = lastTableID++;
                     tableStorage.Add(id, table);
                     valueStack.Push(new ScriptValue(dataType.Table, id));
@@ -667,6 +668,7 @@ namespace CoolLanguage.VM
                 else if (instruction.type == InstructionType.CreateArray)
                 {
                     ScriptArray array = new ScriptArray();
+                    array.mark = lastGCMark;
                     int id = lastArrayID++;
                     arrayStorage.Add(id, array);
 
