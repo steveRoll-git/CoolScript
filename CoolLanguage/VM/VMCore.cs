@@ -825,8 +825,11 @@ namespace CoolLanguage.VM
             {
                 if (arrayStorage.TryGetValue(value.value, out ScriptArray array))
                 {
-                    array.mark++;
-                    GC_MarkCollection(array.list);
+                    if(array.mark < lastGCMark)
+                    {
+                        array.mark++;
+                        GC_MarkCollection(array.list);
+                    }
                 }
                 else
                 {
@@ -837,8 +840,11 @@ namespace CoolLanguage.VM
             {
                 if (tableStorage.TryGetValue(value.value, out Table table))
                 {
-                    table.mark++;
-                    GC_MarkCollection(table.dictionary.Values);
+                    if(table.mark < lastGCMark)
+                    {
+                        table.mark++;
+                        GC_MarkCollection(table.dictionary.Values);
+                    }
                 }
                 else
                 {
