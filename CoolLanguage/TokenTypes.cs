@@ -110,6 +110,8 @@ namespace CoolLanguage
             {"<=", VM.InstructionType.LEqual },
             {"==", VM.InstructionType.Equal },
             {"!=", VM.InstructionType.NEqual },
+            {"&&", VM.InstructionType.And },
+            {"||", VM.InstructionType.Or }
         };
 
         public VM.InstructionType getBinaryInstruction()
