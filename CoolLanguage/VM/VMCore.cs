@@ -212,6 +212,7 @@ namespace CoolLanguage.VM
         };
 
         private List<ClosureInstance> callStack = new List<ClosureInstance>();
+        private const int maxStackDepth = 100;
 
         Stack<ScriptValue> valueStack = new Stack<ScriptValue>();
 
@@ -398,6 +399,12 @@ namespace CoolLanguage.VM
 
         public ExecutionStatus Run(Closure closure, ScriptValue[] arguments)
         {
+            if (callStack.Count >= maxStackDepth)
+            {
+                callStack.Clear();
+                return new ExecutionStatus(false, "stack overflow");
+            }
+
             ClosureInstance instance = new ClosureInstance(closure);
 
             callStack.Add(instance);
