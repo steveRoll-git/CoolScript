@@ -833,9 +833,9 @@ namespace CoolLanguage.VM
             {
                 if (arrayStorage.TryGetValue(value.value, out ScriptArray array))
                 {
-                    if(array.mark < lastGCMark)
+                    if (array.mark != lastGCMark)
                     {
-                        array.mark++;
+                        array.mark = lastGCMark;
                         GC_MarkCollection(array.list);
                     }
                 }
@@ -848,9 +848,9 @@ namespace CoolLanguage.VM
             {
                 if (tableStorage.TryGetValue(value.value, out Table table))
                 {
-                    if(table.mark < lastGCMark)
+                    if (table.mark != lastGCMark)
                     {
-                        table.mark++;
+                        table.mark = lastGCMark;
                         GC_MarkCollection(table.dictionary.Values);
                     }
                 }
@@ -863,9 +863,9 @@ namespace CoolLanguage.VM
             {
                 if (functionStorage.TryGetValue(value.value, out Closure closure))
                 {
-                    if (closure.mark < lastGCMark)
+                    if (closure.mark != lastGCMark)
                     {
-                        closure.mark++;
+                        closure.mark = lastGCMark;
                     }
                 }
                 else
