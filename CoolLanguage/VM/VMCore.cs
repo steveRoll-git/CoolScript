@@ -942,6 +942,8 @@ namespace CoolLanguage.VM
 
             GC_MarkValue(returnRegister);
 
+            GC_MarkCollection(valueStack);
+
             //TODO add upvalues here
 
             GC_Sweep();
