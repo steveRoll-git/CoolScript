@@ -1,0 +1,12 @@
+﻿function fibonacci(max){
+	var a = 0
+	var b = 1
+	var sum = 1
+	while(a < max){
+		print(a)
+
+		a = b
+		b = sum
+		sum = a + b
+	}
+}

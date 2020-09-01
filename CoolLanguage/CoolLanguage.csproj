@@ -48,6 +48,9 @@
     <None Include="examples\factorial.cool">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </None>
+    <None Include="examples\fibonacci.cool">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </None>
     <None Include="examples\multiplicationGame.cool">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </None>
