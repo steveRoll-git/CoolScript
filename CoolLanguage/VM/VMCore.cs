@@ -108,7 +108,7 @@ namespace CoolLanguage.VM
     {
         public InstructionType type;
 
-        public dynamic data;
+        public object data;
 
         public VMInstruction(InstructionType t, object d = null)
         {
@@ -147,7 +147,7 @@ namespace CoolLanguage.VM
     {
         public static bool isTruthyValue(ScriptValue value)
         {
-            return value.type != dataType.Null && (value.type != dataType.Boolean || value.value == true);
+            return value.type != dataType.Null && (value.type != dataType.Boolean || (bool)value.value == true);
         }
 
         public static bool isWhole(double d)
@@ -194,19 +194,19 @@ namespace CoolLanguage.VM
     class CoolScriptVM
     {
         static Func<ScriptValue, ScriptValue, ScriptValue>[] binaryOperators = {
-            (ScriptValue a, ScriptValue b) => new ScriptValue(dataType.Number, a.value + b.value), // add
-            (ScriptValue a, ScriptValue b) => new ScriptValue(dataType.Number, a.value - b.value), // sub
-            (ScriptValue a, ScriptValue b) => new ScriptValue(dataType.Number, a.value * b.value), // mul
-            (ScriptValue a, ScriptValue b) => new ScriptValue(dataType.Number, a.value / b.value), // div
-            (ScriptValue a, ScriptValue b) => new ScriptValue(dataType.Number, a.value % b.value), // mod
-            (ScriptValue a, ScriptValue b) => new ScriptValue(dataType.Number, Math.Pow(a.value, b.value)), // pow
+            (ScriptValue a, ScriptValue b) => new ScriptValue(dataType.Number, (double)a.value + (double)b.value), // add
+            (ScriptValue a, ScriptValue b) => new ScriptValue(dataType.Number, (double)a.value - (double)b.value), // sub
+            (ScriptValue a, ScriptValue b) => new ScriptValue(dataType.Number, (double)a.value * (double)b.value), // mul
+            (ScriptValue a, ScriptValue b) => new ScriptValue(dataType.Number, (double)a.value / (double)b.value), // div
+            (ScriptValue a, ScriptValue b) => new ScriptValue(dataType.Number, (double)a.value % (double)b.value), // mod
+            (ScriptValue a, ScriptValue b) => new ScriptValue(dataType.Number, Math.Pow((double)a.value, (double)b.value)), // pow
             (ScriptValue a, ScriptValue b) => new ScriptValue(dataType.String, a.value.ToString() + b.value.ToString()), // concat
-            (ScriptValue a, ScriptValue b) => new ScriptValue(dataType.Boolean, a.value > b.value), // greater
-            (ScriptValue a, ScriptValue b) => new ScriptValue(dataType.Boolean, a.value < b.value), // less
-            (ScriptValue a, ScriptValue b) => new ScriptValue(dataType.Boolean, a.value >= b.value), // gequal
-            (ScriptValue a, ScriptValue b) => new ScriptValue(dataType.Boolean, a.value <= b.value), // lequal
-            (ScriptValue a, ScriptValue b) => new ScriptValue(dataType.Boolean, a.value == b.value), // equal
-            (ScriptValue a, ScriptValue b) => new ScriptValue(dataType.Boolean, a.value != b.value), // nequal
+            (ScriptValue a, ScriptValue b) => new ScriptValue(dataType.Boolean, (double)a.value > (double)b.value), // greater
+            (ScriptValue a, ScriptValue b) => new ScriptValue(dataType.Boolean, (double)a.value < (double)b.value), // less
+            (ScriptValue a, ScriptValue b) => new ScriptValue(dataType.Boolean, (double)a.value >= (double)b.value), // gequal
+            (ScriptValue a, ScriptValue b) => new ScriptValue(dataType.Boolean, (double)a.value <= (double)b.value), // lequal
+            (ScriptValue a, ScriptValue b) => new ScriptValue(dataType.Boolean, (double)a.value == (double)b.value), // equal
+            (ScriptValue a, ScriptValue b) => new ScriptValue(dataType.Boolean, (double)a.value != (double)b.value), // nequal
             (ScriptValue a, ScriptValue b) => !Util.isTruthyValue(a) ? a : b, // and
             (ScriptValue a, ScriptValue b) => Util.isTruthyValue(a) ? a : b, // or
         };
@@ -278,7 +278,7 @@ namespace CoolLanguage.VM
                     else if (args[0].type == dataType.String)
                     {
                         double result;
-                        if(double.TryParse(args[0].value, out result))
+                        if(double.TryParse((string)args[0].value, out result))
                         {
                             return new CFuncStatus(new ScriptValue(dataType.Number, result));
                         }
@@ -299,11 +299,11 @@ namespace CoolLanguage.VM
 
                     if(args[0].type == dataType.String)
                     {
-                        return new CFuncStatus(new ScriptValue(dataType.Number, (double)args[0].value.Length));
+                        return new CFuncStatus(new ScriptValue(dataType.Number, ((string)args[0].value).Length));
                     }
                     else if(args[0].type == dataType.Array)
                     {
-                        if(arrayStorage.TryGetValue(args[0].value, out ScriptArray array))
+                        if(arrayStorage.TryGetValue((int)args[0].value, out ScriptArray array))
                         {
                             return new CFuncStatus(new ScriptValue(dataType.Number, (double)array.list.Count));
                         }
@@ -328,7 +328,7 @@ namespace CoolLanguage.VM
                     {
                         if(args[0].type != dataType.Number)
                             return argError("random", 1, "number", args[0].TypeName);
-                        return new CFuncStatus(new ScriptValue(dataType.Number, Math.Floor(randomGenerator.NextDouble() * args[0].value)));
+                        return new CFuncStatus(new ScriptValue(dataType.Number, Math.Floor(randomGenerator.NextDouble() * (double)args[0].value)));
                     }
                     else
                     {
@@ -336,7 +336,7 @@ namespace CoolLanguage.VM
                             return argError("random", 1, "number", args[0].TypeName);
                         if(args[1].type != dataType.Number)
                             return argError("random", 2, "number", args[1].TypeName);
-                        return new CFuncStatus(new ScriptValue(dataType.Number, Math.Floor(args[0].value + randomGenerator.NextDouble() * (args[1].value - args[0].value))));
+                        return new CFuncStatus(new ScriptValue(dataType.Number, Math.Floor((double)args[0].value + randomGenerator.NextDouble() * ((double)args[1].value - (double)args[0].value))));
                     }
                 } },
                 {"randomseed", (ScriptValue[] args) =>
@@ -359,7 +359,7 @@ namespace CoolLanguage.VM
                     if(args[0].type != dataType.String)
                         return argError("loadstring", 1, "string", args[0].TypeName);
 
-                    Chunk chunk = new Parser(args[0].value).ParseChunk(lastPrototypeID);
+                    Chunk chunk = new Parser((string)args[0].value).ParseChunk(lastPrototypeID);
                     Closure newClosure = LoadChunk(chunk);
                     int id = lastFunctionID++;
                     functionStorage.Add(id, newClosure);
@@ -377,7 +377,7 @@ namespace CoolLanguage.VM
 
                     try
                     {
-                        content = System.IO.File.ReadAllText(args[0].value);
+                        content = System.IO.File.ReadAllText((string)args[0].value);
                     }
                     catch (Exception e)
                     {
@@ -437,9 +437,9 @@ namespace CoolLanguage.VM
                 }
                 else if (instruction.type == InstructionType.PushGlobal)
                 {
-                    if (globalVars.ContainsKey(instruction.data))
+                    if (globalVars.ContainsKey((string)instruction.data))
                     {
-                        valueStack.Push(globalVars[instruction.data]);
+                        valueStack.Push(globalVars[(string)instruction.data]);
                     }
                     else
                     {
@@ -450,17 +450,17 @@ namespace CoolLanguage.VM
                 {
                     ScriptValue theValue = valueStack.Pop();
 
-                    globalVars[instruction.data] = theValue;
+                    globalVars[(string)instruction.data] = theValue;
 
                     GC_FullCycle();
                 }
                 else if (instruction.type == InstructionType.GetLocal)
                 {
-                    valueStack.Push(instance.stackFrame[instruction.data]);
+                    valueStack.Push(instance.stackFrame[(int)instruction.data]);
                 }
                 else if (instruction.type == InstructionType.SetLocal)
                 {
-                    instance.stackFrame[instruction.data] = valueStack.Pop();
+                    instance.stackFrame[(int)instruction.data] = valueStack.Pop();
 
                     GC_FullCycle();
                 }
@@ -472,7 +472,7 @@ namespace CoolLanguage.VM
                     if (obj.type == dataType.Table)
                     {
 
-                        if (tableStorage.TryGetValue(obj.value, out Table table))
+                        if (tableStorage.TryGetValue((int)obj.value, out Table table))
                         {
                             if (index.type != dataType.String)
                             {
@@ -480,7 +480,7 @@ namespace CoolLanguage.VM
                             }
                             else
                             {
-                                if (table.dictionary.TryGetValue(index.value, out ScriptValue value))
+                                if (table.dictionary.TryGetValue((string)index.value, out ScriptValue value))
                                 {
                                     valueStack.Push(value);
                                 }
@@ -499,13 +499,13 @@ namespace CoolLanguage.VM
                     else if (obj.type == dataType.Array)
                     {
 
-                        if (arrayStorage.TryGetValue(obj.value, out ScriptArray array))
+                        if (arrayStorage.TryGetValue((int)obj.value, out ScriptArray array))
                         {
                             if (index.type != dataType.Number)
                             {
                                 return new ExecutionStatus(false, "Attempt to index array with " + index.TypeName + " value");
                             }
-                            else if (!Util.isWhole(index.value) || index.value < 0D)
+                            else if (!Util.isWhole((double)index.value) || (double)index.value < 0D)
                             {
                                 return new ExecutionStatus(false, "Array index must be whole and positive");
                             }
@@ -538,12 +538,12 @@ namespace CoolLanguage.VM
                 {
                     ScriptValue setValue = valueStack.Pop();
                     ScriptValue index = valueStack.Pop();
-                    ScriptValue obj = instruction.data ? valueStack.Peek() : valueStack.Pop();
+                    ScriptValue obj = (bool)instruction.data ? valueStack.Peek() : valueStack.Pop();
 
                     if (obj.type == dataType.Table)
                     {
 
-                        if (tableStorage.TryGetValue(obj.value, out Table table))
+                        if (tableStorage.TryGetValue((int)obj.value, out Table table))
                         {
                             if (index.type != dataType.String)
                             {
@@ -551,7 +551,7 @@ namespace CoolLanguage.VM
                             }
                             else
                             {
-                                table.dictionary[index.value] = setValue;
+                                table.dictionary[(string)index.value] = setValue;
                             }
                         }
                         else
@@ -563,13 +563,13 @@ namespace CoolLanguage.VM
                     else if (obj.type == dataType.Array)
                     {
 
-                        if (arrayStorage.TryGetValue(obj.value, out ScriptArray array))
+                        if (arrayStorage.TryGetValue((int)obj.value, out ScriptArray array))
                         {
                             if (index.type != dataType.Number)
                             {
                                 return new ExecutionStatus(false, "Attempt to index array with " + index.TypeName + " value");
                             }
-                            else if (!Util.isWhole(index.value) || index.value < 0D)
+                            else if (!Util.isWhole((double)index.value) || (double)index.value < 0D)
                             {
                                 return new ExecutionStatus(false, "Array index must be whole and positive");
                             }
@@ -605,9 +605,9 @@ namespace CoolLanguage.VM
 
                     if (function.type == dataType.Function)
                     {
-                        if (functionStorage.TryGetValue(function.value, out Closure theClosure))
+                        if (functionStorage.TryGetValue((int)function.value, out Closure theClosure))
                         {
-                            int argCount = instruction.data;
+                            int argCount = (int)instruction.data;
 
                             ScriptValue[] args = new ScriptValue[theClosure.prototype.argCount];
 
@@ -633,13 +633,13 @@ namespace CoolLanguage.VM
                     else if (function.type == dataType.CFunction)
                     {
                         Func<ScriptValue[], CFuncStatus> cFunc;
-                        if (!CFunctionStorage.TryGetValue(function.value, out cFunc))
+                        if (!CFunctionStorage.TryGetValue((int)function.value, out cFunc))
                         {
                             //normally this shouldn't happen
                             return new ExecutionStatus(false, "CFunction " + function.value + " doesn't exist");
                         }
 
-                        int argCount = instruction.data;
+                        int argCount = (int)instruction.data;
 
                         ScriptValue[] args = new ScriptValue[argCount];
 
@@ -679,7 +679,7 @@ namespace CoolLanguage.VM
                     int id = lastArrayID++;
                     arrayStorage.Add(id, array);
 
-                    for (int i = 0; i < instruction.data; i++)
+                    for (int i = 0; i < (int)instruction.data; i++)
                     {
                         array.list.Insert(0, valueStack.Pop());
                     }
@@ -688,7 +688,7 @@ namespace CoolLanguage.VM
                 }
                 else if (instruction.type == InstructionType.CreateClosure)
                 {
-                    if (functionPrototypes.TryGetValue(instruction.data, out FunctionPrototype prototype))
+                    if (functionPrototypes.TryGetValue((int)instruction.data, out FunctionPrototype prototype))
                     {
                         Closure newClosure = new Closure(prototype);
                         newClosure.mark = lastGCMark;
@@ -750,7 +750,7 @@ namespace CoolLanguage.VM
                             goto dont;
                         }
                     }
-                    instance.instructionPointer += instruction.data;
+                    instance.instructionPointer += (int)instruction.data;
                     incrementIP = false;
                 dont:;
                 }
@@ -763,11 +763,11 @@ namespace CoolLanguage.VM
                         return new ExecutionStatus(false, "Attempt to negate a " + value.TypeName + " value");
                     }
 
-                    valueStack.Push(new ScriptValue(dataType.Number, -value.value));
+                    valueStack.Push(new ScriptValue(dataType.Number, -(double)value.value));
                 }
                 else if (instruction.type == InstructionType.Return)
                 {
-                    if (instruction.data)
+                    if ((bool)instruction.data)
                     {
                         returnRegister = valueStack.Pop();
                     }
@@ -831,7 +831,7 @@ namespace CoolLanguage.VM
         {
             if (value.type == dataType.Array)
             {
-                if (arrayStorage.TryGetValue(value.value, out ScriptArray array))
+                if (arrayStorage.TryGetValue((int)value.value, out ScriptArray array))
                 {
                     if (array.mark != lastGCMark)
                     {
@@ -846,7 +846,7 @@ namespace CoolLanguage.VM
             }
             else if (value.type == dataType.Table)
             {
-                if (tableStorage.TryGetValue(value.value, out Table table))
+                if (tableStorage.TryGetValue((int)value.value, out Table table))
                 {
                     if (table.mark != lastGCMark)
                     {
@@ -861,7 +861,7 @@ namespace CoolLanguage.VM
             }
             else if (value.type == dataType.Function)
             {
-                if (functionStorage.TryGetValue(value.value, out Closure closure))
+                if (functionStorage.TryGetValue((int)value.value, out Closure closure))
                 {
                     if (closure.mark != lastGCMark)
                     {

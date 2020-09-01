@@ -30,7 +30,7 @@ namespace CoolLanguage.VM
 
         public dataType type;
 
-        public dynamic value;
+        public object value;
 
         public ScriptValue(dataType t, object v = null)
         {
@@ -58,7 +58,7 @@ namespace CoolLanguage.VM
             }
             else if (type == dataType.Boolean)
             {
-                return value ? "true" : "false";
+                return (bool)value ? "true" : "false";
             }
             else if (type == dataType.Null)
             {
