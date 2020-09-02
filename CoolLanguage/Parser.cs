@@ -34,12 +34,6 @@ namespace CoolLanguage
         CreateArray,
     }
 
-    enum Associativity
-    {
-        Left,
-        Right
-    }
-
     abstract class Tree
     {
         public TreeType type
@@ -658,16 +652,6 @@ namespace CoolLanguage
         private List<FunctionPrototype> prototypes = new List<FunctionPrototype>();
 
         //////////
-
-        static Associativity getAssociativity(Token op)
-        {
-            switch (op.value)
-            {
-                case "^":
-                    return Associativity.Right;
-            }
-            return Associativity.Left;
-        }
         
         private void nextToken()
         {
@@ -871,15 +855,15 @@ namespace CoolLanguage
         private Tree ParseExpression1(Tree lhs, int minPrecedence) // https://en.wikipedia.org/wiki/Operator-precedence_parser literally just copied the pseudocode
         {
             Token lookahead = curToken;
-            while( lookahead.type == TokenType.BinaryOperator && lookahead.getPrecedence() >= minPrecedence){
+            while( lookahead.type == TokenType.BinaryOperator && lookahead.precedence >= minPrecedence){
 
                 Token op = lookahead;
                 nextToken();
                 Tree rhs = ParsePrimary();
                 lookahead = curToken;
-                while(lookahead.type == TokenType.BinaryOperator && ((lookahead.getPrecedence() > op.getPrecedence()) || (getAssociativity(lookahead) == Associativity.Right && lookahead.getPrecedence() == op.getPrecedence())))
+                while(lookahead.type == TokenType.BinaryOperator && ((lookahead.precedence > op.precedence) || (lookahead.associativity == Associativity.Right && lookahead.precedence == op.precedence)))
                 {
-                    rhs = ParseExpression1(rhs, lookahead.getPrecedence());
+                    rhs = ParseExpression1(rhs, lookahead.precedence);
                     lookahead = curToken;
                 }
 

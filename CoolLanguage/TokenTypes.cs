@@ -30,6 +30,12 @@ namespace CoolLanguage
         Invalid = -1
     }
 
+    enum Associativity
+    {
+        Left,
+        Right
+    }
+
     struct Token
     {
         public TokenType type;
@@ -64,35 +70,52 @@ namespace CoolLanguage
             return type == t2.type && (t2.value == "" || value == t2.value);
         }
 
-        public int getPrecedence()
+        public int precedence
         {
-            switch (value)
+            get
             {
-                case "||":
-                    return (int)Precedence.LogicOr;
-                case "&&":
-                    return (int)Precedence.LogicAnd;
-                case "==":
-                case "!=":
-                    return (int)Precedence.Equality;
-                case ">":
-                case "<":
-                case ">=":
-                case "<=":
-                    return (int)Precedence.Comparison;
-                case "..":
-                    return (int)Precedence.Concat;
-                case "+":
-                case "-":
-                    return (int)Precedence.Additive;
-                case "*":
-                case "/":
-                case "%":
-                    return (int)Precedence.Multiplicative;
-                case "^":
-                    return (int)Precedence.Power;
+                switch (value)
+                {
+                    case "||":
+                        return (int)Precedence.LogicOr;
+                    case "&&":
+                        return (int)Precedence.LogicAnd;
+                    case "==":
+                    case "!=":
+                        return (int)Precedence.Equality;
+                    case ">":
+                    case "<":
+                    case ">=":
+                    case "<=":
+                        return (int)Precedence.Comparison;
+                    case "..":
+                        return (int)Precedence.Concat;
+                    case "+":
+                    case "-":
+                        return (int)Precedence.Additive;
+                    case "*":
+                    case "/":
+                    case "%":
+                        return (int)Precedence.Multiplicative;
+                    case "^":
+                        return (int)Precedence.Power;
+                }
+                return (int)Precedence.Invalid;
             }
-            return (int)Precedence.Invalid;
+            
+        }
+
+        public Associativity associativity
+        {
+            get
+            {
+                switch (value)
+                {
+                    case "^":
+                        return Associativity.Right;
+                }
+                return Associativity.Left;
+            }
         }
 
         static Dictionary<string, VM.InstructionType> binaryInstructions = new Dictionary<string, VM.InstructionType>
