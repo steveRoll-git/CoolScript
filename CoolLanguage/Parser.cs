@@ -264,7 +264,7 @@ namespace CoolLanguage
             type = TreeType.LocalAssignment;
 
             localIndex = _localIndex;
-            value = _value;
+            value = _value ?? new NullTree();
         }
 
         override public VMInstruction[] GetInstructions()
@@ -906,9 +906,12 @@ namespace CoolLanguage
 
                     nextToken();
 
-                    expect(equals);
+                    Tree expression = null;
 
-                    Tree expression = ParseExpression();
+                    if (accept(equals).valid)
+                    {
+                        expression = ParseExpression();
+                    }
 
                     Scope last = scopes[scopes.Count - 1];
 
