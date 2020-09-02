@@ -57,7 +57,6 @@
     <None Include="Calculator.cs" />
     <Compile Include="ErrorTypes.cs" />
     <Compile Include="Parser.cs" />
-    <Compile Include="ParserDebug.cs" />
     <Compile Include="TokenTypes.cs" />
     <Compile Include="Lexer.cs" />
     <Compile Include="Program.cs" />
