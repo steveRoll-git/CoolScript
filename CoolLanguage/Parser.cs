@@ -854,17 +854,14 @@ namespace CoolLanguage
 
         private Tree ParseExpression1(Tree lhs, int minPrecedence) // https://en.wikipedia.org/wiki/Operator-precedence_parser literally just copied the pseudocode
         {
-            Token lookahead = curToken;
-            while( lookahead.type == TokenType.BinaryOperator && lookahead.precedence >= minPrecedence){
+            while( curToken.type == TokenType.BinaryOperator && curToken.precedence >= minPrecedence){
 
-                Token op = lookahead;
+                Token op = curToken;
                 nextToken();
                 Tree rhs = ParsePrimary();
-                lookahead = curToken;
-                while(lookahead.type == TokenType.BinaryOperator && ((lookahead.precedence > op.precedence) || (lookahead.associativity == Associativity.Right && lookahead.precedence == op.precedence)))
+                while(curToken.type == TokenType.BinaryOperator && ((curToken.precedence > op.precedence) || (curToken.associativity == Associativity.Right && curToken.precedence == op.precedence)))
                 {
-                    rhs = ParseExpression1(rhs, lookahead.precedence);
-                    lookahead = curToken;
+                    rhs = ParseExpression1(rhs, curToken.precedence);
                 }
 
                 lhs = new BinaryOperatorTree(op, lhs, rhs);
