@@ -95,105 +95,101 @@ namespace CoolLanguage
             get => currentPos < code.Length ? code[currentPos] : '\0';
         }
 
+        private void nextChar()
+        {
+            if (!reachedEnd)
+            {
+                currentPos++;
+                if (currentPos >= code.Length)
+                {
+                    reachedEnd = true;
+                }
+                else if (currentChar == '\n')
+                {
+                    currentLine++;
+                }
+            }
+        }
+
         public Token nextToken()
         {
-            TokenType doing = TokenType.None;
-            string tokenValue = "";
-
-            if (currentPos == code.Length)
+            while (!reachedEnd && (char.IsWhiteSpace(code, currentPos) || currentChar == '\r' || currentChar == '\n')) // get past all the spaces and newlines
             {
-                reachedEnd = true;
+                nextChar();
             }
 
             if (reachedEnd)
             {
-                doing = TokenType.EndOfFile;
+                return Token.EOF;
             }
-            else
+
+            TokenType doing = TokenType.None;
+            string tokenValue = "";
+
+            if (isAlNum(currentChar))
             {
-                while (char.IsWhiteSpace(code, currentPos) || currentChar == '\r' || currentChar == '\n') // get past all the spaces and newlines
+                doing = char.IsDigit(code, currentPos) ? TokenType.Number : TokenType.Identifier;
+
+                do
                 {
-                    if (currentChar == '\n')
-                        currentLine++;
+                    tokenValue += currentChar;
+                    nextChar();
+                } while (!reachedEnd && (isAlNum(currentChar) || (doing == TokenType.Number && currentChar == '.')));
 
-                    currentPos++;
+                if (keywords.ContainsKey(tokenValue))
+                {
+                    doing = TokenType.Keyword;
+                }
+            }
+            else if (currentChar == '"' || currentChar == '\'')
+            {
+                char stringStart = currentChar;
 
-                    if (currentPos == code.Length)
+                doing = TokenType.String;
+
+                //Console.WriteLine("string start");
+
+                while (true)
+                {
+                    nextChar();
+                    //Console.WriteLine(currentPos);
+                    if (reachedEnd)
                     {
-                        doing = TokenType.EndOfFile;
-                        reachedEnd = true;
+                        throw new SyntaxErrorException(currentLine, "unfinished string");
+                    }
+                    else if (currentChar == stringStart)
+                    {
+                        nextChar();
                         break;
                     }
-                }
-
-                if (doing != TokenType.EndOfFile)
-                {
-                    if (isAlNum(currentChar))
+                    else if (currentChar == '\\')
                     {
-                        doing = char.IsDigit(code, currentPos) ? TokenType.Number : TokenType.Identifier;
-
-                        do
+                        nextChar();
+                        if (escapeChars.TryGetValue(currentChar, out char escapeChar))
                         {
-                            tokenValue += currentChar;
-                            currentPos++;
-                        } while (currentPos < code.Length && (isAlNum(currentChar) || (doing == TokenType.Number && currentChar == '.')));
-
-                        if (keywords.ContainsKey(tokenValue))
-                        {
-                            doing = TokenType.Keyword;
+                            tokenValue += escapeChar;
                         }
-                    }
-                    else if (currentChar == '"' || currentChar == '\'')
-                    {
-                        char stringStart = currentChar;
-
-                        doing = TokenType.String;
-
-                        //Console.WriteLine("string start");
-
-                        while (true)
+                        else
                         {
-                            currentPos++;
-                            //Console.WriteLine(currentPos);
-                            if (currentPos >= code.Length)
-                            {
-                                throw new SyntaxErrorException(currentLine, "unfinished string");
-                            }
-                            else if (currentChar == stringStart)
-                            {
-                                currentPos++;
-                                break;
-                            }
-                            else if (currentChar == '\\')
-                            {
-                                currentPos++;
-                                if (escapeChars.TryGetValue(currentChar, out char escapeChar))
-                                {
-                                    tokenValue += escapeChar;
-                                }
-                                else
-                                {
-                                    throw new SyntaxErrorException(currentLine, "invalid escape sequence");
-                                }
-                            }
-                            else
-                            {
-                                tokenValue += currentChar;
-                                //Console.WriteLine("!" + tokenValue);
-                            }
+                            throw new SyntaxErrorException(currentLine, "invalid escape sequence");
                         }
                     }
                     else
                     {
-                        do
-                        {
-                            tokenValue += currentChar;
-                            currentPos++;
-                        } while (operatorGroups.ContainsKey(code[currentPos - 1].ToString() + currentChar));
-
-                        doing = isUnaryOperator(tokenValue) ? TokenType.UnaryOperator : (isBinaryOperator(tokenValue) ? TokenType.BinaryOperator : TokenType.Punctuation);
+                        tokenValue += currentChar;
+                        //Console.WriteLine("!" + tokenValue);
                     }
                 }
+            }
+            else
+            {
+                do
+                {
+                    tokenValue += currentChar;
+                    nextChar();
+                } while (operatorGroups.ContainsKey(code[currentPos - 1].ToString() + currentChar));
+
+                doing = isUnaryOperator(tokenValue) ? TokenType.UnaryOperator : (isBinaryOperator(tokenValue) ? TokenType.BinaryOperator : TokenType.Punctuation);
             }
 
             return new Token(doing, tokenValue, currentLine);
