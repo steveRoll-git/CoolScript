@@ -81,6 +81,10 @@ namespace CoolLanguage
             {'n', '\n' },
         };
 
+        private const string singleComment = "//";
+        private const string multiCommentStart = "/*";
+        private const string multiCommentEnd = "*/";
+
         public Lexer(string theCode)
         {
             code = theCode;
@@ -113,9 +117,35 @@ namespace CoolLanguage
 
         public Token nextToken()
         {
-            while (!reachedEnd && (char.IsWhiteSpace(code, currentPos) || currentChar == '\r' || currentChar == '\n')) // get past all the spaces and newlines
+            while (!reachedEnd && (char.IsWhiteSpace(code, currentPos) || currentChar == '\r' || currentChar == '\n' || IsNextEqual(singleComment) || IsNextEqual(multiCommentStart))) // get past any spaces, newlines and comments
             {
-                nextChar();
+                if (IsNextEqual(singleComment))
+                {
+                    while (!reachedEnd && currentChar != '\n')
+                    {
+                        nextChar();
+                    }
+                    nextChar();
+                }
+                else if (IsNextEqual(multiCommentStart))
+                {
+                    while (!IsNextEqual(multiCommentEnd))
+                    {
+                        nextChar();
+                        if (currentPos > code.Length - multiCommentEnd.Length)
+                        {
+                            throw new SyntaxErrorException(currentLine, "unfinished multiline comment");
+                        }
+                    }
+                    for (int i = 0; i < multiCommentEnd.Length; i++)
+                    {
+                        nextChar();
+                    }
+                }
+                else
+                {
+                    nextChar();
+                }
             }
 
             if (reachedEnd)
@@ -193,6 +223,11 @@ namespace CoolLanguage
             }
 
             return new Token(doing, tokenValue, currentLine);
+        }
+
+        private bool IsNextEqual(string s)
+        {
+            return code.Length - currentPos >= s.Length && code.Substring(currentPos, s.Length) == s;
         }
 
         private char Peek()

@@ -1,19 +1,35 @@
-﻿var score = 0
+﻿/*
+This game gives you 10 problems from the multiplication table.
+If you answer correctly, a single point is added.
+*/
+
+var score = 0
 
 var question = 0
 
+//repeats for each question
 while(question < 10){
-	print("Question " .. question + 1 .. ":")
+	print("Question " .. question + 1 .. ":") //print the question number
+
+	//generate the numbers for the problem
 	var numberA = random(2, 11)
 	var numberB = random(2, 11)
+
+	//print the problem and get the result
 	var result = tonumber(input((numberA .. " * " .. numberB .. " = ")))
+
 	if(result == numberA * numberB){
+		//add a point if the answer was correct
 		score = score + 1
-		print("Correct!" .. "\n")
+		print("Correct!\n")
 	}else{
+		//print the correct answer
 		print("Wrong! The correct answer is " .. numberA * numberB .. "\n")
 	}
+
+	//advance to the next question
 	question = question + 1
 }
 
+//print the player's score
 print("You scored " .. score .. " points!")
