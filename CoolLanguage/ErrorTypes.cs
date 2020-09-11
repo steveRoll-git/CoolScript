@@ -1,6 +1,6 @@
 ﻿using System;
 
-namespace CoolLanguage
+namespace CoolScript
 {
     class SyntaxErrorException : Exception
     {

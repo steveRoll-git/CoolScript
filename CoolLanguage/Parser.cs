@@ -1,9 +1,9 @@
 ﻿using System;
 using System.Collections.Generic;
 
-using CoolLanguage.VM;
+using CoolScript.VM;
 
-namespace CoolLanguage
+namespace CoolScript
 {
     enum TreeType
     {

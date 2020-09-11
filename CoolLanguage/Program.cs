@@ -4,9 +4,9 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-using CoolLanguage.VM;
+using CoolScript.VM;
 
-namespace CoolLanguage
+namespace CoolScript
 {
     class Program
     {

@@ -1,7 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 
-namespace CoolLanguage.VM
+namespace CoolScript.VM
 {
     class ScriptRuntimeException : Exception
     {

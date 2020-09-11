@@ -1,7 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 
-namespace CoolLanguage
+namespace CoolScript
 {
 
     class Lexer

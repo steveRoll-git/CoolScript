@@ -4,7 +4,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace CoolLanguage.VM
+namespace CoolScript.VM
 {
     static class Debug
     {

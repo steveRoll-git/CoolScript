@@ -1,6 +1,6 @@
 ﻿using System.Collections.Generic;
 
-namespace CoolLanguage.VM
+namespace CoolScript.VM
 {
     enum dataType
     {
