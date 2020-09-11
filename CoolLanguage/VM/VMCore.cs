@@ -215,32 +215,32 @@ namespace CoolScript.VM
         private List<ClosureInstance> callStack = new List<ClosureInstance>();
         private const int maxStackDepth = 100;
 
-        Stack<ScriptValue> valueStack = new Stack<ScriptValue>();
+        private Stack<ScriptValue> valueStack = new Stack<ScriptValue>();
 
-        Dictionary<string, ScriptValue> globalVars = new Dictionary<string, ScriptValue>();
+        private Dictionary<string, ScriptValue> globalVars = new Dictionary<string, ScriptValue>();
 
-        ScriptValue returnRegister;
+        private ScriptValue returnRegister;
 
-        Dictionary<int, Table> tableStorage = new Dictionary<int, Table>();
+        private Dictionary<int, Table> tableStorage = new Dictionary<int, Table>();
         private int lastTableID = 0;
 
-        Dictionary<int, ScriptArray> arrayStorage = new Dictionary<int, ScriptArray>();
+        private Dictionary<int, ScriptArray> arrayStorage = new Dictionary<int, ScriptArray>();
         private int lastArrayID = 0;
 
-        Dictionary<int, Closure> functionStorage = new Dictionary<int, Closure>();
+        private Dictionary<int, Closure> functionStorage = new Dictionary<int, Closure>();
         private int lastFunctionID = 0;
 
-        Dictionary<int, Func<ScriptValue[], CFuncStatus>> CFunctionStorage = new Dictionary<int, Func<ScriptValue[], CFuncStatus>>();
+        private Dictionary<int, Func<ScriptValue[], CFuncStatus>> CFunctionStorage = new Dictionary<int, Func<ScriptValue[], CFuncStatus>>();
         private int lastCFunctionID = 0;
 
-        Dictionary<int, FunctionPrototype> functionPrototypes = new Dictionary<int, FunctionPrototype>();
+        private Dictionary<int, FunctionPrototype> functionPrototypes = new Dictionary<int, FunctionPrototype>();
         public int lastPrototypeID
         {
             get;
             private set;
         } = 0;
 
-        Random randomGenerator = new Random();
+        private Random randomGenerator = new Random();
 
         static CFuncStatus argError(string funcName, int argNumber, string expected, string got = "")
         {
