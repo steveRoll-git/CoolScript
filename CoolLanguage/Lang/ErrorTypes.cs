@@ -1,6 +1,6 @@
 ﻿using System;
 
-namespace CoolScript
+namespace CoolScript.Lang
 {
     class SyntaxErrorException : Exception
     {
@@ -10,7 +10,7 @@ namespace CoolScript
         }
 
         public SyntaxErrorException(int line, string details)
-            : base(String.Format("Syntax error on line {0}: {1}", line, details))
+            : base(string.Format("Syntax error on line {0}: {1}", line, details))
         {
 
         }

@@ -55,10 +55,10 @@
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </None>
     <None Include="Calculator.cs" />
-    <Compile Include="ErrorTypes.cs" />
-    <Compile Include="Parser.cs" />
-    <Compile Include="TokenTypes.cs" />
-    <Compile Include="Lexer.cs" />
+    <Compile Include="Lang\ErrorTypes.cs" />
+    <Compile Include="Lang\Parser.cs" />
+    <Compile Include="Lang\TokenTypes.cs" />
+    <Compile Include="Lang\Lexer.cs" />
     <Compile Include="Program.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="VM\Debug.cs" />
