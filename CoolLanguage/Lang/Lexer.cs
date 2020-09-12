@@ -152,7 +152,7 @@ namespace CoolScript.Lang
 
             if (reachedEnd)
             {
-                return Token.EOF;
+                return new Token(TokenType.EndOfFile, "", currentLine);
             }
 
             TokenType doing = TokenType.None;
