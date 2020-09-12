@@ -361,9 +361,8 @@ namespace CoolScript.VM
                         return argError("loadstring", 1, "string", args[0].TypeName);
 
                     Closure newClosure = LoadChunk((string)args[0].value);
-                    int id = lastFunctionID++;
-                    functionStorage.Add(id, newClosure);
-                    return new CFuncStatus(new ScriptValue(dataType.Function, id));
+                    ScriptValue function = AddClosure(newClosure);
+                    return new CFuncStatus(function);
                 } },
                 {"loadfile", (ScriptValue[] args) =>
                 {
@@ -385,9 +384,8 @@ namespace CoolScript.VM
                     }
 
                     Closure newClosure = LoadChunk(content);
-                    int id = lastFunctionID++;
-                    functionStorage.Add(id, newClosure);
-                    return new CFuncStatus(new ScriptValue(dataType.Function, id));
+                    ScriptValue function = AddClosure(newClosure);
+                    return new CFuncStatus(function);
                 } }
             };
             foreach (var function in defaultFunctions)
@@ -492,11 +490,9 @@ namespace CoolScript.VM
                     if (functionPrototypes.TryGetValue((int)instruction.data, out FunctionPrototype prototype))
                     {
                         Closure newClosure = new Closure(prototype);
-                        newClosure.mark = lastGCMark;
-                        int id = lastFunctionID++;
-                        functionStorage.Add(id, newClosure);
+                        ScriptValue function = AddClosure(newClosure);
 
-                        valueStack.Push(new ScriptValue(dataType.Function, id));
+                        valueStack.Push(function);
                     }
                     else
                     {
@@ -874,6 +870,13 @@ namespace CoolScript.VM
             }
 
             return new Closure(functionPrototypes[functionPrototypes.Count - 1]);
+        }
+
+        private ScriptValue AddClosure(Closure closure)
+        {
+            int id = lastFunctionID++;
+            functionStorage.Add(id, closure);
+            return new ScriptValue(dataType.Function, id);
         }
 
         public ScriptValue getStackLast()
