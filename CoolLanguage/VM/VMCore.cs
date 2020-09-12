@@ -360,8 +360,7 @@ namespace CoolScript.VM
                     if(args[0].type != dataType.String)
                         return argError("loadstring", 1, "string", args[0].TypeName);
 
-                    Chunk chunk = new Parser((string)args[0].value).ParseChunk(lastPrototypeID);
-                    Closure newClosure = LoadChunk(chunk);
+                    Closure newClosure = LoadChunk((string)args[0].value);
                     int id = lastFunctionID++;
                     functionStorage.Add(id, newClosure);
                     return new CFuncStatus(new ScriptValue(dataType.Function, id));
@@ -385,8 +384,7 @@ namespace CoolScript.VM
                         return new CFuncStatus(e.Message);
                     }
 
-                    Chunk chunk = new Parser(content).ParseChunk(lastPrototypeID);
-                    Closure newClosure = LoadChunk(chunk);
+                    Closure newClosure = LoadChunk(content);
                     int id = lastFunctionID++;
                     functionStorage.Add(id, newClosure);
                     return new CFuncStatus(new ScriptValue(dataType.Function, id));
@@ -864,21 +862,18 @@ namespace CoolScript.VM
             valueStack.Push(new ScriptValue(dataType.Array, id));
         }
 
-        public Closure LoadChunk(Chunk chunk)
+        public Closure LoadChunk(string code)
         {
+            Parser parser = new Parser(code);
+
+            Chunk chunk = parser.ParseChunk(lastPrototypeID);
+
             foreach (FunctionPrototype prototype in chunk.prototypes)
             {
                 functionPrototypes.Add(lastPrototypeID++, prototype);
             }
 
             return new Closure(functionPrototypes[functionPrototypes.Count - 1]);
-        }
-
-        public ExecutionStatus ExecuteChunk(Chunk chunk)
-        {
-            //int firstId = lastPrototypeID;
-            Closure closure = LoadChunk(chunk);
-            return Run(closure, new ScriptValue[0]);
         }
 
         public ScriptValue getStackLast()

@@ -36,9 +36,8 @@ namespace CoolScript
 
                 try
                 {
-                    Parser parser = new Parser(System.IO.File.ReadAllText(args[0]));
-                    Chunk chunk = parser.ParseChunk(vm.lastPrototypeID);
-                    status = vm.ExecuteChunk(chunk);
+                    Closure closure = vm.LoadChunk(System.IO.File.ReadAllText(args[0]));
+                    status = vm.Run(closure, new ScriptValue[0]);
                 }
                 catch (SyntaxErrorException err)
                 {
@@ -84,9 +83,8 @@ namespace CoolScript
                         }
                         else
                         {*/
-                        Parser parser = new Parser(input);
-                        Chunk chunk = parser.ParseChunk(vm.lastPrototypeID);
-                        status = vm.ExecuteChunk(chunk);
+                        Closure closure = vm.LoadChunk(input);
+                        status = vm.Run(closure, new ScriptValue[0]);
                     }
                     catch (SyntaxErrorException err)
                     {
