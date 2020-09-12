@@ -422,38 +422,27 @@ namespace CoolScript.VM
 
                 if (instruction.type == InstructionType.PushNumber)
                 {
-                    valueStack.Push(new ScriptValue(dataType.Number, instruction.data));
+                    PushNumber((double)instruction.data);
                 }
                 else if (instruction.type == InstructionType.PushString)
                 {
-                    valueStack.Push(new ScriptValue(dataType.String, instruction.data));
+                    PushString((string)instruction.data);
                 }
                 else if (instruction.type == InstructionType.PushBool)
                 {
-                    valueStack.Push(new ScriptValue(dataType.Boolean, instruction.data));
+                    PushBool((bool)instruction.data);
                 }
                 else if (instruction.type == InstructionType.PushNull)
                 {
-                    valueStack.Push(new ScriptValue(dataType.Null));
+                    PushNull();
                 }
                 else if (instruction.type == InstructionType.PushGlobal)
                 {
-                    if (globalVars.ContainsKey((string)instruction.data))
-                    {
-                        valueStack.Push(globalVars[(string)instruction.data]);
-                    }
-                    else
-                    {
-                        valueStack.Push(ScriptValue.Null);
-                    }
+                    PushGlobal((string)instruction.data);
                 }
                 else if (instruction.type == InstructionType.PopGlobal)
                 {
-                    ScriptValue theValue = valueStack.Pop();
-
-                    globalVars[(string)instruction.data] = theValue;
-
-                    GC_FullCycle();
+                    PopGlobal((string)instruction.data);
                 }
                 else if (instruction.type == InstructionType.GetLocal)
                 {
@@ -467,225 +456,38 @@ namespace CoolScript.VM
                 }
                 else if (instruction.type == InstructionType.GetIndex)
                 {
-                    ScriptValue index = valueStack.Pop();
-                    ScriptValue obj = valueStack.Pop();
+                    ExecutionStatus status = GetIndex();
 
-                    if (obj.type == dataType.Table)
+                    if (!status.success)
                     {
-
-                        if (tableStorage.TryGetValue((int)obj.value, out Table table))
-                        {
-                            if (index.type != dataType.String)
-                            {
-                                return new ExecutionStatus(false, "Attempt to index table with " + index.TypeName + " value");
-                            }
-                            else
-                            {
-                                if (table.dictionary.TryGetValue((string)index.value, out ScriptValue value))
-                                {
-                                    valueStack.Push(value);
-                                }
-                                else
-                                {
-                                    valueStack.Push(ScriptValue.Null);
-                                }
-                            }
-                        }
-                        else
-                        {
-                            //normally this shouldn't happen
-                            return new ExecutionStatus(false, "Table " + obj.value + " doesn't exist");
-                        }
-                    }
-                    else if (obj.type == dataType.Array)
-                    {
-
-                        if (arrayStorage.TryGetValue((int)obj.value, out ScriptArray array))
-                        {
-                            if (index.type != dataType.Number)
-                            {
-                                return new ExecutionStatus(false, "Attempt to index array with " + index.TypeName + " value");
-                            }
-                            else if (!Util.isWhole((double)index.value) || (double)index.value < 0D)
-                            {
-                                return new ExecutionStatus(false, "Array index must be whole and positive");
-                            }
-                            else
-                            {
-                                int actualIndex = (int)(double)index.value;
-
-                                if (actualIndex < array.list.Count)
-                                {
-                                    valueStack.Push(array.list[actualIndex]);
-                                }
-                                else
-                                {
-                                    valueStack.Push(ScriptValue.Null);
-                                }
-                            }
-                        }
-                        else
-                        {
-                            //normally this shouldn't happen
-                            return new ExecutionStatus(false, "Array " + obj.value + " doesn't exist");
-                        }
-                    }
-                    else
-                    {
-                        return new ExecutionStatus(false, "Attempt to index a " + obj.TypeName + " value");
+                        return status;
                     }
                 }
                 else if (instruction.type == InstructionType.SetIndex)
                 {
-                    ScriptValue setValue = valueStack.Pop();
-                    ScriptValue index = valueStack.Pop();
-                    ScriptValue obj = (bool)instruction.data ? valueStack.Peek() : valueStack.Pop();
+                    ExecutionStatus status = SetIndex((bool)instruction.data);
 
-                    if (obj.type == dataType.Table)
+                    if (!status.success)
                     {
-
-                        if (tableStorage.TryGetValue((int)obj.value, out Table table))
-                        {
-                            if (index.type != dataType.String)
-                            {
-                                return new ExecutionStatus(false, "Attempt to index table with " + index.TypeName + " value");
-                            }
-                            else
-                            {
-                                table.dictionary[(string)index.value] = setValue;
-                            }
-                        }
-                        else
-                        {
-                            //normally this shouldn't happen
-                            return new ExecutionStatus(false, "Table " + obj.value + " doesn't exist");
-                        }
-                    }
-                    else if (obj.type == dataType.Array)
-                    {
-
-                        if (arrayStorage.TryGetValue((int)obj.value, out ScriptArray array))
-                        {
-                            if (index.type != dataType.Number)
-                            {
-                                return new ExecutionStatus(false, "Attempt to index array with " + index.TypeName + " value");
-                            }
-                            else if (!Util.isWhole((double)index.value) || (double)index.value < 0D)
-                            {
-                                return new ExecutionStatus(false, "Array index must be whole and positive");
-                            }
-                            else
-                            {
-                                int actualIndex = (int)(double)index.value;
-
-                                if (actualIndex >= array.list.Count)
-                                {
-                                    while (array.list.Count <= actualIndex)
-                                    {
-                                        array.list.Add(ScriptValue.Null);
-                                    }
-                                }
-
-                                array.list[actualIndex] = setValue;
-                            }
-                        }
-                        else
-                        {
-                            //normally this shouldn't happen
-                            return new ExecutionStatus(false, "Array " + obj.value + " doesn't exist");
-                        }
-                    }
-                    else
-                    {
-                        return new ExecutionStatus(false, "Attempt to index a " + obj.TypeName + " value");
+                        return status;
                     }
                 }
                 else if (instruction.type == InstructionType.Call)
                 {
-                    ScriptValue function = valueStack.Pop();
+                    ExecutionStatus status = Call((int)instruction.data);
 
-                    if (function.type == dataType.Function)
+                    if (!status.success)
                     {
-                        if (functionStorage.TryGetValue((int)function.value, out Closure theClosure))
-                        {
-                            int argCount = (int)instruction.data;
-
-                            ScriptValue[] args = new ScriptValue[theClosure.prototype.argCount];
-
-                            for (int a = argCount - 1; a >= 0; a--)
-                            {
-                                ScriptValue value = valueStack.Pop();
-                                if (a < theClosure.prototype.argCount)
-                                    args[a] = value;
-                            }
-
-                            ExecutionStatus status = Run(theClosure, args);
-                            if (!status.success)
-                            {
-                                return status;
-                            }
-                        }
-                        else
-                        {
-                            //normally this shouldn't happen
-                            return new ExecutionStatus(false, "Function " + function.value + " doesn't exist");
-                        }
+                        return status;
                     }
-                    else if (function.type == dataType.CFunction)
-                    {
-                        Func<ScriptValue[], CFuncStatus> cFunc;
-                        if (!CFunctionStorage.TryGetValue((int)function.value, out cFunc))
-                        {
-                            //normally this shouldn't happen
-                            return new ExecutionStatus(false, "CFunction " + function.value + " doesn't exist");
-                        }
-
-                        int argCount = (int)instruction.data;
-
-                        ScriptValue[] args = new ScriptValue[argCount];
-
-                        for (int a = argCount - 1; a >= 0; a--)
-                        {
-                            args[a] = valueStack.Pop();
-                        }
-
-                        CFuncStatus status = cFunc(args);
-
-                        if (!status.success)
-                        {
-                            return new ExecutionStatus(false, status.errorMessage);
-                        }
-
-                        returnRegister = status.returnValue;
-                    }
-                    else
-                    {
-                        return new ExecutionStatus(false, "Attempt to call a " + function.TypeName + " value");
-                    }
-
-                    GC_FullCycle();
                 }
                 else if (instruction.type == InstructionType.CreateTable)
                 {
-                    Table table = new Table();
-                    table.mark = lastGCMark;
-                    int id = lastTableID++;
-                    tableStorage.Add(id, table);
-                    valueStack.Push(new ScriptValue(dataType.Table, id));
+                    CreateTable();
                 }
                 else if (instruction.type == InstructionType.CreateArray)
                 {
-                    ScriptArray array = new ScriptArray();
-                    array.mark = lastGCMark;
-                    int id = lastArrayID++;
-                    arrayStorage.Add(id, array);
-
-                    for (int i = 0; i < (int)instruction.data; i++)
-                    {
-                        array.list.Insert(0, valueStack.Pop());
-                    }
-
-                    valueStack.Push(new ScriptValue(dataType.Array, id));
+                    CreateArray((int)instruction.data);
                 }
                 else if (instruction.type == InstructionType.CreateClosure)
                 {
@@ -790,6 +592,276 @@ namespace CoolScript.VM
             callStack.RemoveAt(callStack.Count - 1);
 
             return new ExecutionStatus(true);
+        }
+
+        public void PushNumber(double num)
+        {
+            valueStack.Push(new ScriptValue(dataType.Number, num));
+        }
+
+        public void PushString(string str)
+        {
+            valueStack.Push(new ScriptValue(dataType.String, str));
+        }
+
+        public void PushBool(bool val)
+        {
+            valueStack.Push(new ScriptValue(dataType.Boolean, val));
+        }
+
+        public void PushNull()
+        {
+            valueStack.Push(ScriptValue.Null);
+        }
+
+        public void PushGlobal(string name)
+        {
+            if (globalVars.ContainsKey(name))
+            {
+                valueStack.Push(globalVars[name]);
+            }
+            else
+            {
+                valueStack.Push(ScriptValue.Null);
+            }
+        }
+
+        public void PopGlobal(string name)
+        {
+            ScriptValue theValue = valueStack.Pop();
+
+            globalVars[name] = theValue;
+
+            GC_FullCycle();
+        }
+
+        public ExecutionStatus GetIndex()
+        {
+            ScriptValue index = valueStack.Pop();
+            ScriptValue obj = valueStack.Pop();
+
+            if (obj.type == dataType.Table)
+            {
+
+                if (tableStorage.TryGetValue((int)obj.value, out Table table))
+                {
+                    if (index.type != dataType.String)
+                    {
+                        return new ExecutionStatus(false, "Attempt to index table with " + index.TypeName + " value");
+                    }
+                    else
+                    {
+                        if (table.dictionary.TryGetValue((string)index.value, out ScriptValue value))
+                        {
+                            valueStack.Push(value);
+                        }
+                        else
+                        {
+                            valueStack.Push(ScriptValue.Null);
+                        }
+                    }
+                }
+                else
+                {
+                    //normally this shouldn't happen
+                    return new ExecutionStatus(false, "Table " + obj.value + " doesn't exist");
+                }
+            }
+            else if (obj.type == dataType.Array)
+            {
+
+                if (arrayStorage.TryGetValue((int)obj.value, out ScriptArray array))
+                {
+                    if (index.type != dataType.Number)
+                    {
+                        return new ExecutionStatus(false, "Attempt to index array with " + index.TypeName + " value");
+                    }
+                    else if (!Util.isWhole((double)index.value) || (double)index.value < 0D)
+                    {
+                        return new ExecutionStatus(false, "Array index must be whole and positive");
+                    }
+                    else
+                    {
+                        int actualIndex = (int)(double)index.value;
+
+                        if (actualIndex < array.list.Count)
+                        {
+                            valueStack.Push(array.list[actualIndex]);
+                        }
+                        else
+                        {
+                            valueStack.Push(ScriptValue.Null);
+                        }
+                    }
+                }
+                else
+                {
+                    //normally this shouldn't happen
+                    return new ExecutionStatus(false, "Array " + obj.value + " doesn't exist");
+                }
+            }
+            else
+            {
+                return new ExecutionStatus(false, "Attempt to index a " + obj.TypeName + " value");
+            }
+
+            return new ExecutionStatus(true);
+        }
+
+        public ExecutionStatus SetIndex(bool keepTable)
+        {
+            ScriptValue setValue = valueStack.Pop();
+            ScriptValue index = valueStack.Pop();
+            ScriptValue obj = keepTable ? valueStack.Peek() : valueStack.Pop();
+
+            if (obj.type == dataType.Table)
+            {
+
+                if (tableStorage.TryGetValue((int)obj.value, out Table table))
+                {
+                    if (index.type != dataType.String)
+                    {
+                        return new ExecutionStatus(false, "Attempt to index table with " + index.TypeName + " value");
+                    }
+                    else
+                    {
+                        table.dictionary[(string)index.value] = setValue;
+                    }
+                }
+                else
+                {
+                    //normally this shouldn't happen
+                    return new ExecutionStatus(false, "Table " + obj.value + " doesn't exist");
+                }
+            }
+            else if (obj.type == dataType.Array)
+            {
+
+                if (arrayStorage.TryGetValue((int)obj.value, out ScriptArray array))
+                {
+                    if (index.type != dataType.Number)
+                    {
+                        return new ExecutionStatus(false, "Attempt to index array with " + index.TypeName + " value");
+                    }
+                    else if (!Util.isWhole((double)index.value) || (double)index.value < 0D)
+                    {
+                        return new ExecutionStatus(false, "Array index must be whole and positive");
+                    }
+                    else
+                    {
+                        int actualIndex = (int)(double)index.value;
+
+                        if (actualIndex >= array.list.Count)
+                        {
+                            while (array.list.Count <= actualIndex)
+                            {
+                                array.list.Add(ScriptValue.Null);
+                            }
+                        }
+
+                        array.list[actualIndex] = setValue;
+                    }
+                }
+                else
+                {
+                    //normally this shouldn't happen
+                    return new ExecutionStatus(false, "Array " + obj.value + " doesn't exist");
+                }
+            }
+            else
+            {
+                return new ExecutionStatus(false, "Attempt to index a " + obj.TypeName + " value");
+            }
+
+            return new ExecutionStatus(true);
+        }
+
+        public ExecutionStatus Call(int argCount)
+        {
+            ScriptValue function = valueStack.Pop();
+
+            if (function.type == dataType.Function)
+            {
+                if (functionStorage.TryGetValue((int)function.value, out Closure theClosure))
+                {
+                    ScriptValue[] args = new ScriptValue[theClosure.prototype.argCount];
+
+                    for (int a = argCount - 1; a >= 0; a--)
+                    {
+                        ScriptValue value = valueStack.Pop();
+                        if (a < theClosure.prototype.argCount)
+                            args[a] = value;
+                    }
+
+                    ExecutionStatus status = Run(theClosure, args);
+                    if (!status.success)
+                    {
+                        return status;
+                    }
+                }
+                else
+                {
+                    //normally this shouldn't happen
+                    return new ExecutionStatus(false, "Function " + function.value + " doesn't exist");
+                }
+            }
+            else if (function.type == dataType.CFunction)
+            {
+                Func<ScriptValue[], CFuncStatus> cFunc;
+                if (!CFunctionStorage.TryGetValue((int)function.value, out cFunc))
+                {
+                    //normally this shouldn't happen
+                    return new ExecutionStatus(false, "CFunction " + function.value + " doesn't exist");
+                }
+
+                ScriptValue[] args = new ScriptValue[argCount];
+
+                for (int a = argCount - 1; a >= 0; a--)
+                {
+                    args[a] = valueStack.Pop();
+                }
+
+                CFuncStatus status = cFunc(args);
+
+                if (!status.success)
+                {
+                    return new ExecutionStatus(false, status.errorMessage);
+                }
+
+                returnRegister = status.returnValue;
+            }
+            else
+            {
+                return new ExecutionStatus(false, "Attempt to call a " + function.TypeName + " value");
+            }
+
+            GC_FullCycle();
+
+            return new ExecutionStatus(true);
+        }
+
+        public void CreateTable()
+        {
+            Table table = new Table();
+            table.mark = lastGCMark;
+            int id = lastTableID++;
+            tableStorage.Add(id, table);
+            valueStack.Push(new ScriptValue(dataType.Table, id));
+        }
+
+        public void CreateArray(int numItems)
+        {
+            ScriptArray array = new ScriptArray();
+            array.mark = lastGCMark;
+            int id = lastArrayID++;
+            arrayStorage.Add(id, array);
+
+            for (int i = 0; i < numItems; i++)
+            {
+                array.list.Insert(0, valueStack.Pop());
+            }
+
+            valueStack.Push(new ScriptValue(dataType.Array, id));
         }
 
         public Closure LoadChunk(Chunk chunk)
