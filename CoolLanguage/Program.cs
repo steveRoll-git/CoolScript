@@ -36,8 +36,8 @@ namespace CoolScript
 
                 try
                 {
-                    Closure closure = vm.LoadChunk(System.IO.File.ReadAllText(args[0]));
-                    status = vm.Run(closure, new ScriptValue[0]);
+                    vm.LoadChunk(System.IO.File.ReadAllText(args[0]));
+                    status = vm.Call(0);
                 }
                 catch (SyntaxErrorException err)
                 {
@@ -83,8 +83,8 @@ namespace CoolScript
                         }
                         else
                         {*/
-                        Closure closure = vm.LoadChunk(input);
-                        status = vm.Run(closure, new ScriptValue[0]);
+                        vm.LoadChunk(input);
+                        status = vm.Call(0);
                     }
                     catch (SyntaxErrorException err)
                     {

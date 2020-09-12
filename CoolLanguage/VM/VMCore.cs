@@ -239,11 +239,7 @@ namespace CoolScript.VM
         private int lastCFunctionID = 0;
 
         private Dictionary<int, FunctionPrototype> functionPrototypes = new Dictionary<int, FunctionPrototype>();
-        public int lastPrototypeID
-        {
-            get;
-            private set;
-        } = 0;
+        private int lastPrototypeID = 0;
 
         private Random randomGenerator = new Random();
 
@@ -365,7 +361,7 @@ namespace CoolScript.VM
                     if(args[0].type != dataType.String)
                         return argError("loadstring", 1, "string", args[0].TypeName);
 
-                    Closure newClosure = LoadChunk((string)args[0].value);
+                    Closure newClosure = LoadChunkClosure((string)args[0].value);
                     ScriptValue function = AddClosure(newClosure);
                     return new CFuncStatus(function);
                 } },
@@ -388,7 +384,7 @@ namespace CoolScript.VM
                         return new CFuncStatus(e.Message);
                     }
 
-                    Closure newClosure = LoadChunk(content);
+                    Closure newClosure = LoadChunkClosure(content);
                     ScriptValue function = AddClosure(newClosure);
                     return new CFuncStatus(function);
                 } }
@@ -399,7 +395,7 @@ namespace CoolScript.VM
             }
         }
 
-        public ExecutionStatus Run(Closure closure, ScriptValue[] arguments)
+        private ExecutionStatus Run(Closure closure, ScriptValue[] arguments)
         {
             if (callStack.Count >= maxStackDepth)
             {
@@ -863,7 +859,7 @@ namespace CoolScript.VM
             valueStack.Push(new ScriptValue(dataType.Array, id));
         }
 
-        public Closure LoadChunk(string code)
+        private Closure LoadChunkClosure(string code)
         {
             Parser parser = new Parser(code);
 
@@ -875,6 +871,15 @@ namespace CoolScript.VM
             }
 
             return new Closure(functionPrototypes[functionPrototypes.Count - 1]);
+        }
+
+        public void LoadChunk(string code)
+        {
+            Closure closure = LoadChunkClosure(code);
+
+            ScriptValue value = AddClosure(closure);
+
+            valueStack.Push(value);
         }
 
         private ScriptValue AddClosure(Closure closure)
