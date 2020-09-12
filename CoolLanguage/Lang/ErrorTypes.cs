@@ -2,7 +2,7 @@
 
 namespace CoolScript.Lang
 {
-    class SyntaxErrorException : Exception
+    public class SyntaxErrorException : Exception
     {
         public SyntaxErrorException()
         {

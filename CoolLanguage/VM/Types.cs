@@ -2,7 +2,7 @@
 
 namespace CoolScript.VM
 {
-    enum dataType
+    public enum dataType
     {
         Null,
         Boolean,
@@ -14,7 +14,7 @@ namespace CoolScript.VM
         CFunction
     }
 
-    struct ScriptValue
+    public struct ScriptValue
     {
         static string[] typeNames =
         {

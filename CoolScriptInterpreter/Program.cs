@@ -54,7 +54,6 @@ namespace CoolScript
             {
 
             }
-            //Console.WriteLine("Prepend '?' to evaluate expressions\n");
 
             Console.WriteLine();
 
@@ -71,18 +70,6 @@ namespace CoolScript
 
                     try
                     {
-                        /*if (input[0] == '?')
-                        {
-                            Parser parser = new Parser(input.Substring(1));
-                            Tree expression = parser.ParseExpression();
-                            status = vm.Run(expression.GetInstructions());
-                            if (status.success)
-                            {
-                                Console.WriteLine(vm.getStackLast());
-                            }
-                        }
-                        else
-                        {*/
                         vm.LoadChunk(input);
                         status = vm.Call(0);
                     }

@@ -123,7 +123,7 @@ namespace CoolScript.VM
         }
     }
 
-    struct ExecutionStatus
+    public struct ExecutionStatus
     {
         public bool success;
 
@@ -162,7 +162,7 @@ namespace CoolScript.VM
         }
     }
 
-    struct CFuncStatus
+    public struct CFuncStatus
     {
         public bool success;
         public string errorMessage;
@@ -197,7 +197,7 @@ namespace CoolScript.VM
         }
     }
 
-    class CoolScriptVM
+    public class CoolScriptVM
     {
         static Func<ScriptValue, ScriptValue, ScriptValue>[] binaryOperators = {
             (ScriptValue a, ScriptValue b) => new ScriptValue(dataType.Number, (double)a.value + (double)b.value), // add
