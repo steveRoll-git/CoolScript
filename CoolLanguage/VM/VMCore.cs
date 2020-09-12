@@ -155,6 +155,11 @@ namespace CoolScript.VM
         {
             return Math.Abs(d % 1) <= (Double.Epsilon * 100);
         }
+
+        public static bool AreValuesEqual(ScriptValue a, ScriptValue b)
+        {
+            return a.type == b.type && a.value.Equals(b.value);
+        }
     }
 
     struct CFuncStatus
@@ -206,8 +211,8 @@ namespace CoolScript.VM
             (ScriptValue a, ScriptValue b) => new ScriptValue(dataType.Boolean, (double)a.value < (double)b.value), // less
             (ScriptValue a, ScriptValue b) => new ScriptValue(dataType.Boolean, (double)a.value >= (double)b.value), // gequal
             (ScriptValue a, ScriptValue b) => new ScriptValue(dataType.Boolean, (double)a.value <= (double)b.value), // lequal
-            (ScriptValue a, ScriptValue b) => new ScriptValue(dataType.Boolean, (double)a.value == (double)b.value), // equal
-            (ScriptValue a, ScriptValue b) => new ScriptValue(dataType.Boolean, (double)a.value != (double)b.value), // nequal
+            (ScriptValue a, ScriptValue b) => new ScriptValue(dataType.Boolean, Util.AreValuesEqual(a, b)), // equal
+            (ScriptValue a, ScriptValue b) => new ScriptValue(dataType.Boolean, !Util.AreValuesEqual(a, b)), // nequal
             (ScriptValue a, ScriptValue b) => !Util.isTruthyValue(a) ? a : b, // and
             (ScriptValue a, ScriptValue b) => Util.isTruthyValue(a) ? a : b, // or
         };
