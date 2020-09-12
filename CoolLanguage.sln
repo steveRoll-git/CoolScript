@@ -1,9 +1,9 @@
 ﻿
 Microsoft Visual Studio Solution File, Format Version 12.00
-# Visual Studio 15
-VisualStudioVersion = 15.0.28307.852
+# Visual Studio Version 16
+VisualStudioVersion = 16.0.30503.244
 MinimumVisualStudioVersion = 10.0.40219.1
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "CoolLanguage", "CoolLanguage\CoolLanguage.csproj", "{B7B4ED48-0F00-46B9-8598-3A30352E1002}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "CoolScript", "CoolLanguage\CoolScript.csproj", "{B7B4ED48-0F00-46B9-8598-3A30352E1002}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
