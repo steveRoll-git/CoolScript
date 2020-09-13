@@ -243,6 +243,9 @@ namespace CoolScript.VM
 
         private Random randomGenerator = new Random();
 
+        private int GC_Counter = 0;
+        private const int GC_Interval = 50;
+
         static CFuncStatus argError(string funcName, int argNumber, string expected, string got = "")
         {
             return new CFuncStatus(funcName + " arg #" + argNumber + ": expected " + expected + (got != "" ? (", got " + got) : ""));
@@ -449,7 +452,7 @@ namespace CoolScript.VM
                 {
                     instance.stackFrame[(int)instruction.data] = valueStack.Pop();
 
-                    GC_FullCycle();
+                    GC_Count();
                 }
                 else if (instruction.type == InstructionType.GetIndex)
                 {
@@ -627,7 +630,7 @@ namespace CoolScript.VM
 
             globalVars[name] = theValue;
 
-            GC_FullCycle();
+            GC_Count();
         }
 
         public ExecutionStatus GetIndex()
@@ -830,7 +833,7 @@ namespace CoolScript.VM
                 return new ExecutionStatus(false, "Attempt to call a " + function.TypeName + " value");
             }
 
-            GC_FullCycle();
+            GC_Count();
 
             return new ExecutionStatus(true);
         }
@@ -1028,6 +1031,17 @@ namespace CoolScript.VM
             //TODO add upvalues here
 
             GC_Sweep();
+        }
+
+        private void GC_Count()
+        {
+            GC_Counter++;
+
+            if (GC_Counter >= GC_Interval)
+            {
+                GC_Counter = 0;
+                GC_FullCycle();
+            }
         }
     }
 }
