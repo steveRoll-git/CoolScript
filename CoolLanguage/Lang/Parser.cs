@@ -47,9 +47,9 @@ namespace CoolScript.Lang
 
     class NumberTree : Tree
     {
-        public string value;
+        public double value;
 
-        public NumberTree(string v)
+        public NumberTree(double v)
         {
             type = TreeType.PrimitiveNumber;
             value = v;
@@ -57,15 +57,7 @@ namespace CoolScript.Lang
 
         override public VMInstruction[] GetInstructions()
         {
-            try
-            {
-                double theNumber = double.Parse(value);
-                return new VMInstruction[] { new VMInstruction(InstructionType.PushNumber, theNumber) };
-            }
-            catch (FormatException)
-            {
-                throw new SyntaxErrorException(0, "Malformed number: '" + value + "'");
-            }
+            return new VMInstruction[] { new VMInstruction(InstructionType.PushNumber, value) };
         }
     }
 
@@ -794,7 +786,17 @@ namespace CoolScript.Lang
 
             Token num = accept(Token.Number);
             if (num.valid)
-                return new NumberTree(num.value);
+            {
+                try
+                {
+                    double theNumber = double.Parse(num.value);
+                    return new NumberTree(theNumber);
+                }
+                catch (FormatException)
+                {
+                    throw new SyntaxErrorException(curToken.line, "Malformed number: '" + num.value + "'");
+                }
+            }
 
             Token theString = accept(Token.String);
             if (theString.valid)
@@ -881,7 +883,14 @@ namespace CoolScript.Lang
                     rhs = ParseExpression1(rhs, curToken.precedence);
                 }
 
-                lhs = new BinaryOperatorTree(op, lhs, rhs);
+                if (lhs.type == TreeType.PrimitiveNumber && rhs.type == TreeType.PrimitiveNumber && Token.simplifyMathOps.ContainsKey(op.value))
+                {
+                    lhs = new NumberTree(op.MathOp((lhs as NumberTree).value, (rhs as NumberTree).value));
+                }
+                else
+                {
+                    lhs = new BinaryOperatorTree(op, lhs, rhs);
+                }
             }
             return lhs;
         }

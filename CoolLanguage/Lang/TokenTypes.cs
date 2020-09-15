@@ -1,4 +1,5 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 
 namespace CoolScript.Lang
 {
@@ -137,12 +138,31 @@ namespace CoolScript.Lang
             {"||", VM.InstructionType.Or }
         };
 
+        public static readonly Dictionary<string, Func<double, double, double>> simplifyMathOps = new Dictionary<string, Func<double, double, double>>
+        {
+            {"+", (double a, double b) => a + b },
+            {"-", (double a, double b) => a - b },
+            {"*", (double a, double b) => a * b },
+            {"/", (double a, double b) => a / b },
+            {"%", (double a, double b) => a % b },
+            {"^", (double a, double b) => Math.Pow(a, b) },
+        };
+
         public VM.InstructionType getBinaryInstruction()
         {
             if (binaryInstructions.ContainsKey(value))
                 return binaryInstructions[value];
 
             return VM.InstructionType.Add; // will probably cause annoying bugs
+        }
+
+        public double MathOp(double a, double b)
+        {
+            if (simplifyMathOps.TryGetValue(value, out var func))
+            {
+                return func(a, b);
+            }
+            throw new Exception(value + " isn't a math operator");
         }
 
         public override string ToString()
