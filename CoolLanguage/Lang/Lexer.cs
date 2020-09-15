@@ -11,6 +11,7 @@ namespace CoolScript.Lang
         static Dictionary<string, bool> keywords = new Dictionary<string, bool>
         {
             {"var", true},
+            {"global", true},
             {"function", true },
             {"return", true },
 

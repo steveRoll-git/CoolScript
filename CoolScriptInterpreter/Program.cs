@@ -73,7 +73,7 @@ namespace CoolScript
                         vm.LoadChunk(input);
                         status = vm.Call(0);
                     }
-                    catch (SyntaxErrorException err)
+                    catch (Exception err)
                     {
                         Console.WriteLine(err.Message);
                         status.success = true; // so we won't get an execution error

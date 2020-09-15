@@ -216,15 +216,20 @@ namespace CoolScript.Lang
 
         override public VMInstruction[] GetInstructions()
         {
-            VMInstruction[] valueInstructions = value.GetInstructions();
+            if (value != null)
+            {
+                VMInstruction[] valueInstructions = value.GetInstructions();
 
-            VMInstruction[] toReturn = new VMInstruction[valueInstructions.Length + 1];
+                VMInstruction[] toReturn = new VMInstruction[valueInstructions.Length + 1];
 
-            Array.Copy(valueInstructions, toReturn, valueInstructions.Length);
+                Array.Copy(valueInstructions, toReturn, valueInstructions.Length);
 
-            toReturn[toReturn.Length - 1] = new VMInstruction(InstructionType.PopGlobal, varName);
+                toReturn[toReturn.Length - 1] = new VMInstruction(InstructionType.PopGlobal, varName);
 
-            return toReturn;
+                return toReturn;
+            }
+            
+            return new VMInstruction[] { };
         }
     }
 
@@ -585,6 +590,7 @@ namespace CoolScript.Lang
     class Scope
     {
         public Dictionary<string, int> localVariables = new Dictionary<string, int>();
+        public Dictionary<string, bool> globalVariables = new Dictionary<string, bool>();
 
         public int localCount = 0;
         public int maxLocalCount = 0;
@@ -686,8 +692,13 @@ namespace CoolScript.Lang
                 {
                     return new LocalValueTree(scopes[i].functionId, scopes[i].localVariables[name]);
                 }
+                else if (scopes[i].globalVariables.ContainsKey(name))
+                {
+                    return new GlobalValueTree(name);
+                }
             }
-            return new GlobalValueTree(name);
+
+            return null;
         }
 
         //==========
@@ -699,6 +710,12 @@ namespace CoolScript.Lang
                 if (curToken.type == TokenType.Identifier)
                 {
                     theObject = GetVariableFromName(curToken.value);
+
+                    if (theObject == null)
+                    {
+                        throw new ReferenceErrorException(curToken.line, $"'{curToken.value}' is not defined");
+                    }
+
                     if (theObject.type == TreeType.LocalValue)
                     {
                         if ((theObject as LocalValueTree).functionId != scopes[scopes.Count - 1].functionId)
@@ -881,8 +898,10 @@ namespace CoolScript.Lang
                 Token keyword = curToken;
                 nextToken();
 
-                if (keyword.value == "var")
+                if (keyword.value == "var" || keyword.value == "global")
                 {
+                    bool isLocal = keyword.value == "var";
+
                     string varName = curToken.value;
 
                     nextToken();
@@ -896,12 +915,21 @@ namespace CoolScript.Lang
 
                     Scope last = scopes[scopes.Count - 1];
 
-                    last.localVariables.Add(varName, last.localCount);
+                    if (isLocal)
+                    {
+                        last.localVariables.Add(varName, last.localCount);
 
-                    last.localCount++;
-                    last.maxLocalCount = Math.Max(last.localCount, last.maxLocalCount);
+                        last.localCount++;
+                        last.maxLocalCount = Math.Max(last.localCount, last.maxLocalCount);
 
-                    return new LocalAssignmentTree(last.localCount - 1, expression);
+                        return new LocalAssignmentTree(last.localCount - 1, expression);
+                    }
+                    else
+                    {
+                        last.globalVariables.Add(varName, true);
+
+                        return new GlobalAssignmentTree(varName, expression);
+                    }
                 }
                 else if (keyword.value == "function")
                 {
@@ -1002,7 +1030,7 @@ namespace CoolScript.Lang
             throw new SyntaxErrorException(curToken.line, "Did not expect " + curToken + " here");
         }
 
-        private BlockTree ParseBlock(ScopeType type, Token endsWith, bool isFunction = false, string[] localVars = null)
+        private BlockTree ParseBlock(ScopeType type, Token endsWith, IEnumerable<string> globalVars = null, bool isFunction = false, string[] localVars = null)
         {
             Scope last = null;
             bool hasLast = scopes.Count > 0;
@@ -1010,6 +1038,7 @@ namespace CoolScript.Lang
                 last = scopes[scopes.Count - 1];
 
             Scope newScope = new Scope(type);
+
             if (isFunction)
             {
                 newScope.functionId = ++functionIdCount;
@@ -1026,6 +1055,15 @@ namespace CoolScript.Lang
                 newScope.maxLocalCount = last.maxLocalCount;
                 newScope.functionId = last.functionId;
             }
+
+            if (globalVars != null)
+            {
+                foreach (string name in globalVars)
+                {
+                    newScope.globalVariables.Add(name, true);
+                }
+            }
+
             scopes.Add(newScope);
 
             BlockTree block = new BlockTree();
@@ -1093,18 +1131,18 @@ namespace CoolScript.Lang
 
             expect(lCurly);
 
-            BlockTree block = ParseBlock(ScopeType.Function, rCurly, true, arguments.ToArray());
+            BlockTree block = ParseBlock(ScopeType.Function, rCurly, null, true, arguments.ToArray());
 
             prototypes.Add(new FunctionPrototype(block.GetInstructions(), block.localCount, arguments.Count));
 
             return new CreateClosureTree(prototypes.Count - 1 + prototypeOffset);
         }
 
-        public Chunk ParseChunk(int prototypeOffset)
+        public Chunk ParseChunk(int prototypeOffset, IEnumerable<string> knownGlobals)
         {
             this.prototypeOffset = prototypeOffset;
 
-            BlockTree block = ParseBlock(ScopeType.Chunk, Token.EOF);
+            BlockTree block = ParseBlock(ScopeType.Chunk, Token.EOF, knownGlobals);
 
             prototypes.Add(new FunctionPrototype(block.GetInstructions(), block.localCount));
 

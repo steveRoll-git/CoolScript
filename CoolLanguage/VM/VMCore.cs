@@ -241,6 +241,8 @@ namespace CoolScript.VM
         private Dictionary<int, FunctionPrototype> functionPrototypes = new Dictionary<int, FunctionPrototype>();
         private int lastPrototypeID = 0;
 
+        private readonly Dictionary<string, Func<ScriptValue[], CFuncStatus>> builtinFunctions;
+
         private Random randomGenerator = new Random();
 
         private int GC_Counter = 0;
@@ -253,7 +255,7 @@ namespace CoolScript.VM
 
         public CoolScriptVM()
         {
-            Dictionary<string, Func<ScriptValue[], CFuncStatus>> defaultFunctions = new Dictionary<string, Func<ScriptValue[], CFuncStatus>>
+            builtinFunctions = new Dictionary<string, Func<ScriptValue[], CFuncStatus>>
             {
                 {"type", (ScriptValue[] args) => {
                     if (args.Length <= 0)
@@ -392,7 +394,7 @@ namespace CoolScript.VM
                     return new CFuncStatus(function);
                 } }
             };
-            foreach (var function in defaultFunctions)
+            foreach (var function in builtinFunctions)
             {
                 AddCFunction(function.Value, function.Key);
             }
@@ -866,7 +868,7 @@ namespace CoolScript.VM
         {
             Parser parser = new Parser(code);
 
-            Chunk chunk = parser.ParseChunk(lastPrototypeID);
+            Chunk chunk = parser.ParseChunk(lastPrototypeID, builtinFunctions.Keys);
 
             foreach (FunctionPrototype prototype in chunk.prototypes)
             {

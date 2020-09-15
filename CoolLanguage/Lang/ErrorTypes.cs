@@ -15,4 +15,18 @@ namespace CoolScript.Lang
 
         }
     }
+
+    public class ReferenceErrorException : Exception
+    {
+        public ReferenceErrorException()
+        {
+
+        }
+
+        public ReferenceErrorException(int line, string details)
+            : base(string.Format("Reference error on line {0}: {1}", line, details))
+        {
+
+        }
+    }
 }
