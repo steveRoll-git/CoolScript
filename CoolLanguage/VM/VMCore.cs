@@ -243,6 +243,8 @@ namespace CoolScript.VM
 
         private readonly Dictionary<string, Func<ScriptValue[], CFuncStatus>> builtinFunctions;
 
+        private Dictionary<string, ScriptValue> registry = new Dictionary<string, ScriptValue>();
+
         private Random randomGenerator = new Random();
 
         private int GC_Counter = 0;
@@ -864,6 +866,33 @@ namespace CoolScript.VM
             valueStack.Push(new ScriptValue(dataType.Array, id));
         }
 
+        /// <summary>
+        /// Gets the value from the registry and pushes it onto the stack.
+        /// </summary>
+        /// <param name="key"></param>
+        public void GetRegistry(string key)
+        {
+            if (registry.TryGetValue(key, out ScriptValue value))
+            {
+                valueStack.Push(value);
+            }
+            else
+            {
+                valueStack.Push(ScriptValue.Null);
+            }
+        }
+
+        /// <summary>
+        /// Pops the last value from the stack and sets the registry at the key to it.
+        /// </summary>
+        /// <param name="key"></param>
+        public void SetRegistry(string key)
+        {
+            ScriptValue value = valueStack.Pop();
+
+            registry[key] = value;
+        }
+
         private Closure LoadChunkClosure(string code)
         {
             Parser parser = new Parser(code);
@@ -1029,6 +1058,8 @@ namespace CoolScript.VM
             GC_MarkValue(returnRegister);
 
             GC_MarkCollection(valueStack);
+
+            GC_MarkCollection(registry.Values);
 
             //TODO add upvalues here
 
