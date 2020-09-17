@@ -923,9 +923,9 @@ namespace CoolScript.VM
             return new ScriptValue(dataType.Function, id);
         }
 
-        public ScriptValue getStackLast()
+        public ScriptValue PopStack()
         {
-            return valueStack.Peek();
+            return valueStack.Pop();
         }
 
         public void AddCFunction(Func<ScriptValue[], CFuncStatus> function, string globalName)
