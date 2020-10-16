@@ -948,6 +948,8 @@ namespace CoolScript.Lang
 
                     GlobalAssignmentTree tree = new GlobalAssignmentTree(name, funcTree);
 
+                    scopes[scopes.Count - 1].globalVariables.Add(name, true);
+
                     return tree;
                 }
                 else if (keyword.value == "if")
