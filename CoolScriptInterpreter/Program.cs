@@ -39,7 +39,7 @@ namespace CoolScript
                     vm.LoadChunk(System.IO.File.ReadAllText(args[0]));
                     status = vm.Call(0);
                 }
-                catch (SyntaxErrorException err)
+                catch (CompilerException err)
                 {
                     Console.WriteLine(err.Message);
                     status.success = true; // so we won't get an execution error
@@ -73,7 +73,7 @@ namespace CoolScript
                         vm.LoadChunk(input);
                         status = vm.Call(0);
                     }
-                    catch (Exception err)
+                    catch (CompilerException err)
                     {
                         Console.WriteLine(err.Message);
                         status.success = true; // so we won't get an execution error

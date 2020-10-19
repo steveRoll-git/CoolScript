@@ -2,13 +2,16 @@
 
 namespace CoolScript.Lang
 {
-    public class SyntaxErrorException : Exception
+    public class CompilerException : Exception
     {
-        public SyntaxErrorException()
+        public CompilerException(string details) : base(details)
         {
 
         }
+    }
 
+    public class SyntaxErrorException : CompilerException
+    {
         public SyntaxErrorException(int line, string details)
             : base(string.Format("Syntax error on line {0}: {1}", line, details))
         {
@@ -16,13 +19,8 @@ namespace CoolScript.Lang
         }
     }
 
-    public class ReferenceErrorException : Exception
+    public class ReferenceErrorException : CompilerException
     {
-        public ReferenceErrorException()
-        {
-
-        }
-
         public ReferenceErrorException(int line, string details)
             : base(string.Format("Reference error on line {0}: {1}", line, details))
         {
