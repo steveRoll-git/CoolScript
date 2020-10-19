@@ -105,7 +105,7 @@ namespace CoolScript.VM
         Not,
     }
 
-    class VMInstruction
+    struct VMInstruction
     {
         public InstructionType type;
 
