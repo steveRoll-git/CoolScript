@@ -944,11 +944,11 @@ namespace CoolScript.Lang
                 {
                     string name = expect(Token.Identifier).value;
 
+                    scopes[scopes.Count - 1].globalVariables.Add(name, true);
+
                     CreateClosureTree funcTree = ParseFunctionDeclaration();
 
                     GlobalAssignmentTree tree = new GlobalAssignmentTree(name, funcTree);
-
-                    scopes[scopes.Count - 1].globalVariables.Add(name, true);
 
                     return tree;
                 }
