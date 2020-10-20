@@ -368,7 +368,16 @@ namespace CoolScript.VM
                     if(args[0].type != dataType.String)
                         return argError("loadstring", 1, "string", args[0].TypeName);
 
-                    Closure newClosure = LoadChunkClosure((string)args[0].value);
+                    Closure newClosure = null;
+                    try
+                    {
+                        newClosure = LoadChunkClosure((string)args[0].value);
+                    }
+                    catch (CompilerException e)
+                    {
+                        return new CFuncStatus(e.Message);
+                    }
+
                     ScriptValue function = AddClosure(newClosure);
                     return new CFuncStatus(function);
                 } },
@@ -391,7 +400,16 @@ namespace CoolScript.VM
                         return new CFuncStatus(e.Message);
                     }
 
-                    Closure newClosure = LoadChunkClosure(content);
+                    Closure newClosure = null;
+                    try
+                    {
+                        newClosure = LoadChunkClosure(content);
+                    }
+                    catch (CompilerException e)
+                    {
+                        return new CFuncStatus(e.Message);
+                    }
+
                     ScriptValue function = AddClosure(newClosure);
                     return new CFuncStatus(function);
                 } }
