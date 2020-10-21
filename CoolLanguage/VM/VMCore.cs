@@ -197,6 +197,8 @@ namespace CoolScript.VM
         }
     }
 
+    public delegate CFuncStatus CFunction(ScriptValue[] args);
+
     public class CoolScriptVM
     {
         static Func<ScriptValue, ScriptValue, ScriptValue>[] binaryOperators = {
@@ -235,13 +237,13 @@ namespace CoolScript.VM
         private Dictionary<int, Closure> functionStorage = new Dictionary<int, Closure>();
         private int lastFunctionID = 0;
 
-        private Dictionary<int, Func<ScriptValue[], CFuncStatus>> CFunctionStorage = new Dictionary<int, Func<ScriptValue[], CFuncStatus>>();
+        private Dictionary<int, CFunction> CFunctionStorage = new Dictionary<int, CFunction>();
         private int lastCFunctionID = 0;
 
         private Dictionary<int, FunctionPrototype> functionPrototypes = new Dictionary<int, FunctionPrototype>();
         private int lastPrototypeID = 0;
 
-        private readonly Dictionary<string, Func<ScriptValue[], CFuncStatus>> builtinFunctions;
+        private readonly Dictionary<string, CFunction> builtinFunctions;
 
         private Dictionary<string, ScriptValue> registry = new Dictionary<string, ScriptValue>();
 
@@ -257,7 +259,7 @@ namespace CoolScript.VM
 
         public CoolScriptVM()
         {
-            builtinFunctions = new Dictionary<string, Func<ScriptValue[], CFuncStatus>>
+            builtinFunctions = new Dictionary<string, CFunction>
             {
                 {"type", (ScriptValue[] args) => {
                     if (args.Length <= 0)
@@ -827,7 +829,7 @@ namespace CoolScript.VM
             }
             else if (function.type == dataType.CFunction)
             {
-                Func<ScriptValue[], CFuncStatus> cFunc;
+                CFunction cFunc;
                 if (!CFunctionStorage.TryGetValue((int)function.value, out cFunc))
                 {
                     //normally this shouldn't happen
@@ -946,7 +948,7 @@ namespace CoolScript.VM
             return valueStack.Pop();
         }
 
-        public void AddCFunction(Func<ScriptValue[], CFuncStatus> function, string globalName)
+        public void AddCFunction(CFunction function, string globalName)
         {
             int id = lastCFunctionID++;
             CFunctionStorage.Add(id, function);
