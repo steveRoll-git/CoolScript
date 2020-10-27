@@ -614,7 +614,7 @@ namespace CoolScript.Lang
 
     class Parser
     {
-        public Lexer lexer;
+        private Lexer lexer;
 
         private Token curToken;
 
