@@ -414,6 +414,10 @@ namespace CoolScript.VM
 
                     ScriptValue function = AddClosure(newClosure);
                     return new CFuncStatus(function);
+                } },
+                {"exit", (ScriptValue[] args) => {
+                    Environment.Exit(0);
+                    return new CFuncStatus(ScriptValue.Null);
                 } }
             };
             foreach (var function in builtinFunctions)
